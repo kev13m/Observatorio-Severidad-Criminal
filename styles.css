@@ -261,15 +261,93 @@ main {
   padding: 28px 6vw 64px;
 }
 
-.method-warning {
+/* =========================
+   Methodology warning
+   ========================= */
+
+details.method-warning {
+  margin-bottom: 20px;
+  padding: 0;
+  border: 1px solid var(--red);
+  border-left: 5px solid var(--red);
+  border-radius: 14px;
+  background: #ffffff;
+  color: #111827;
+  overflow: hidden;
+}
+
+details.method-warning summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 17px;
+  cursor: pointer;
+  color: #111827;
+  font-weight: 800;
+  line-height: 1.35;
+  list-style: none;
+  user-select: none;
+}
+
+details.method-warning summary::-webkit-details-marker {
+  display: none;
+}
+
+details.method-warning summary::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #111827;
+  border-bottom: 2px solid #111827;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  flex: 0 0 auto;
+  margin-right: 3px;
+}
+
+details.method-warning[open] summary {
+  border-bottom: 1px solid #fee2e2;
+}
+
+details.method-warning[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.method-warning-body {
+  padding: 15px 17px 17px;
+  color: #111827;
+  line-height: 1.55;
+  background: #ffffff;
+}
+
+.method-warning-body p {
+  margin: 0 0 11px;
+  color: #111827;
+}
+
+.method-warning-body p:last-child {
+  margin-bottom: 0;
+}
+
+.method-warning-body strong {
+  color: #111827;
+}
+
+section.method-warning {
   margin-bottom: 20px;
   padding: 15px 17px;
-  border: 1px solid #f5d68a;
+  border: 1px solid var(--red);
+  border-left: 5px solid var(--red);
   border-radius: 14px;
-  background: var(--amber-soft);
-  color: #713f12;
+  background: #ffffff;
+  color: #111827;
   line-height: 1.45;
 }
+
+/* =========================
+   Filters
+   ========================= */
 
 .filters-panel {
   display: grid;
@@ -307,6 +385,10 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
 }
 
+/* =========================
+   KPI cards
+   ========================= */
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(160px, 1fr));
@@ -343,6 +425,10 @@ select:focus {
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+/* =========================
+   Desktop dashboard
+   ========================= */
 
 .dashboard-grid {
   display: grid;
@@ -704,6 +790,56 @@ th {
 }
 
 /* =========================
+   Mobile comparison context
+   ========================= */
+
+.mobile-context-card {
+  padding: 14px;
+  border: 1px solid rgba(29, 78, 216, 0.28);
+  border-radius: 15px;
+  background: var(--blue-soft);
+  margin-bottom: 12px;
+  color: #1e293b;
+}
+
+.mobile-context-card strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--navy);
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+}
+
+.mobile-context-card p {
+  margin: 7px 0 0;
+  color: #334155;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.mobile-change-box {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.mobile-change-box small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mobile-card-compare {
+  padding-top: 9px;
+  border-top: 1px solid var(--border-soft);
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+/* =========================
    Footer
    ========================= */
 
@@ -801,12 +937,28 @@ footer {
     padding: 14px 12px 42px;
   }
 
-  .method-warning {
+  details.method-warning {
+    margin-bottom: 12px;
+    border-radius: 14px;
+  }
+
+  details.method-warning summary {
+    padding: 13px;
+    font-size: 0.84rem;
+  }
+
+  .method-warning-body {
+    padding: 13px;
     font-size: 0.82rem;
     line-height: 1.5;
+  }
+
+  section.method-warning {
+    margin-bottom: 12px;
     padding: 13px;
     border-radius: 14px;
-    margin-bottom: 12px;
+    font-size: 0.82rem;
+    line-height: 1.5;
   }
 
   .filters-panel {
@@ -1224,92 +1376,5 @@ footer {
 
   .mobile-card-stats {
     grid-template-columns: 1fr;
-  }
-}.mobile-context-card {
-  padding: 14px;
-  border: 1px solid rgba(29, 78, 216, 0.28);
-  border-radius: 15px;
-  background: var(--blue-soft);
-  margin-bottom: 12px;
-  color: #1e293b;
-}
-
-.mobile-context-card strong {
-  display: block;
-  margin-top: 4px;
-  color: var(--navy);
-  font-size: 1.35rem;
-  letter-spacing: -0.04em;
-}
-
-.mobile-context-card p {
-  margin: 7px 0 0;
-  color: #334155;
-  font-size: 0.84rem;
-  line-height: 1.45;
-}
-
-.mobile-change-box {
-  display: grid;
-  justify-items: end;
-  gap: 4px;
-}
-
-.mobile-change-box small {
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.mobile-card-compare {
-  padding-top: 9px;
-  border-top: 1px solid var(--border-soft);
-  color: var(--muted);
-  font-size: 0.76rem;
-  font-weight: 700;
-}.method-warning summary {
-  cursor: pointer;
-  font-weight: 800;
-  color: #713f12;
-  list-style: none;
-}
-
-.method-warning summary::-webkit-details-marker {
-  display: none;
-}
-
-.method-warning summary::after {
-  content: "Ocultar";
-  float: right;
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: #92400e;
-}
-
-.method-warning:not([open]) summary::after {
-  content: "Mostrar";
-}
-
-.method-warning-body {
-  margin-top: 10px;
-  line-height: 1.5;
-}
-
-@media (max-width: 900px), (hover: none) and (pointer: coarse) {
-  .method-warning summary {
-    font-size: 0.82rem;
-    line-height: 1.35;
-  }
-
-  .method-warning summary::after {
-    float: none;
-    display: inline-flex;
-    margin-left: 8px;
-  }
-
-  .method-warning-body {
-    font-size: 0.8rem;
   }
 }
