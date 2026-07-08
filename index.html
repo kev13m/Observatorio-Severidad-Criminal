@@ -8,7 +8,7 @@
 
   <meta
     name="description"
-    content="Dashboard experimental de criminalidad ponderada por severidad en España. Datos oficiales reprocesados con una capa analítica propia."
+    content="Dashboard experimental de criminalidad ponderada por severidad en España. Datos oficiales reprocesados con una capa analítica propia dentro del proyecto OSINT Vigilante."
   />
 
   <link rel="stylesheet" href="styles.css" />
@@ -20,14 +20,18 @@
       <span class="brand-mark"></span>
 
       <div>
-        <p class="eyebrow">MVP v0.2 · Índice experimental</p>
+        <p class="eyebrow">OSINT Vigilante · MVP v0.2 · Índice experimental</p>
         <h1>Observatorio de Severidad Criminal en España</h1>
+
+        <p class="project-label">
+          Proyecto personal de visualización, lectura crítica y análisis comprensible de datos públicos.
+        </p>
       </div>
     </div>
 
     <div class="topbar-actions">
       <p class="header-note">
-        Datos oficiales de criminalidad registrada reprocesados con una capa experimental de severidad para analizar volumen, gravedad y evolución territorial.
+        Un módulo de OSINT Vigilante orientado a transformar datos públicos complejos en información visual, comprensible y metodológicamente trazable.
       </p>
 
       <button
@@ -50,7 +54,7 @@
     <div class="drawer-header">
       <div>
         <p class="eyebrow">Navegación</p>
-        <h2>Observatorio</h2>
+        <h2>OSINT Vigilante</h2>
       </div>
 
       <button
@@ -70,21 +74,24 @@
       </a>
 
       <a href="metodologia.html">
-        <strong>Motivo, metodología y Disclaimer legal</strong>
+        <strong>Motivo, metodología y disclaimer legal</strong>
         <span>Por qué existe el proyecto, límites de uso y advertencias.</span>
       </a>
     </nav>
 
     <div class="drawer-note">
-      <strong>Serie consolidada:</strong>
-      los datos anuales usados en esta versión llegan hasta 2024.
+      <strong>OSINT Vigilante:</strong>
+      proyecto personal de análisis de fuentes abiertas y visualización de datos públicos. Serie anual consolidada hasta 2024.
     </div>
   </aside>
 
   <main>
     <section class="method-warning">
       <strong>Advertencia metodológica:</strong>
-      este índice no sustituye las estadísticas oficiales. Añade una ponderación experimental para evitar que delitos de baja gravedad oculten variaciones en delitos graves.
+      este índice no sustituye las estadísticas oficiales. Añade una ponderación experimental para facilitar la lectura de la criminalidad registrada según gravedad relativa.
+      <br />
+      <strong>Finalidad del proyecto:</strong>
+      OSINT Vigilante no pretende reemplazar fuentes oficiales, sino mejorar la visualización, comprensión y lectura comparada de datos públicos que, por su estructura agregada, pueden resultar difíciles de interpretar para el público general.
       <br />
       <strong>Naturaleza del dato:</strong>
       salvo cuando la fuente oficial distingue expresamente una categoría consumada —como homicidios/asesinatos consumados—, este proyecto trabaja con <strong>hechos conocidos registrados por tipología penal</strong>, no con una clasificación general de delitos consumados frente a tentativas.
@@ -147,7 +154,56 @@
       </article>
     </section>
 
-    <section class="dashboard-grid">
+    <section class="mobile-dashboard mobile-only">
+      <div class="mobile-tabs" role="tablist" aria-label="Vistas móviles">
+        <button class="mobile-tab active" type="button" data-mobile-view="summary">
+          Resumen
+        </button>
+
+        <button class="mobile-tab" type="button" data-mobile-view="crimes">
+          Delitos
+        </button>
+
+        <button class="mobile-tab" type="button" data-mobile-view="timeline">
+          Evolución
+        </button>
+      </div>
+
+      <article id="mobileSummaryView" class="mobile-view active">
+        <div class="mobile-panel">
+          <div class="mobile-panel-header">
+            <p class="section-kicker">Lectura rápida</p>
+            <h2>Resumen del año seleccionado</h2>
+          </div>
+
+          <div id="mobileSummaryContent"></div>
+        </div>
+      </article>
+
+      <article id="mobileCrimesView" class="mobile-view">
+        <div class="mobile-panel">
+          <div class="mobile-panel-header">
+            <p class="section-kicker">Ranking móvil</p>
+            <h2>Delitos con mayor contribución</h2>
+          </div>
+
+          <div id="mobileCrimeCards" class="mobile-card-list"></div>
+        </div>
+      </article>
+
+      <article id="mobileTimelineView" class="mobile-view">
+        <div class="mobile-panel">
+          <div class="mobile-panel-header">
+            <p class="section-kicker">Evolución anual</p>
+            <h2>Índice ponderado por año</h2>
+          </div>
+
+          <div id="mobileTimelineContent" class="mobile-timeline"></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-grid desktop-dashboard-grid">
       <article class="panel chart-panel">
         <div class="panel-header">
           <div>
@@ -179,7 +235,7 @@
       </article>
     </section>
 
-    <section class="panel">
+    <section class="panel desktop-annual-panel">
       <div class="panel-header">
         <div>
           <h2>Tabla interactiva anual</h2>
@@ -240,7 +296,7 @@
 
   <footer>
     <p>
-      Proyecto experimental. Datos base procedentes de fuentes oficiales. Índice propio no oficial. No constituye asesoramiento legal, criminológico, policial, estadístico ni de política pública.
+      OSINT Vigilante · Proyecto experimental. Datos base procedentes de fuentes oficiales. Índice propio no oficial. No constituye asesoramiento legal, criminológico, policial, estadístico ni de política pública.
     </p>
   </footer>
 
