@@ -754,9 +754,12 @@ function renderMobileSummary(records) {
 
   box.innerHTML = `
     <div class="mobile-summary-card primary">
-      <span class="mobile-label">${escapeHtml(state.territory)}</span>
+      <span class="mobile-label">${escapeHtml(state.territory)} · año seleccionado</span>
       <strong>${year}</strong>
-      <p>Lectura móvil del índice experimental de severidad criminal.</p>
+      <p>
+        Lectura móvil del índice experimental. Las variaciones mostradas comparan
+        ${year} frente a ${previousYear}.
+      </p>
     </div>
 
     <div class="mobile-metric-grid">
@@ -801,6 +804,10 @@ function renderMobileCrimeCards(records) {
   const year = state.selectedYear;
   const previousYear = year - 1;
 
+  const metricLabel = state.metric === "weighted_score"
+    ? "índice ponderado"
+    : "casos registrados";
+
   const rows = records
     .filter(record => Number(record.year) === Number(year))
     .map(record => {
@@ -817,38 +824,57 @@ function renderMobileCrimeCards(records) {
     })
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score));
 
-  box.innerHTML = rows.map((record, index) => `
-    <button
-      class="mobile-crime-card"
-      type="button"
-      data-crime="${encodeURIComponent(record.crime)}"
-      data-year="${year}"
-    >
-      <div class="mobile-card-top">
-        <span class="mobile-rank">#${index + 1}</span>
-        ${formatPercentageWithBadge(record.change)}
-      </div>
+  box.innerHTML = `
+    <div class="mobile-context-card">
+      <span class="mobile-label">Contexto activo</span>
+      <strong>${year}</strong>
+      <p>
+        Ranking ordenado por <b>${metricLabel}</b>. La variación de cada delito compara
+        <b>${year}</b> frente a <b>${previousYear}</b>.
+      </p>
+    </div>
 
-      <strong>${escapeHtml(record.crime)}</strong>
+    ${rows.map((record, index) => `
+      <button
+        class="mobile-crime-card"
+        type="button"
+        data-crime="${encodeURIComponent(record.crime)}"
+        data-year="${year}"
+      >
+        <div class="mobile-card-top">
+          <span class="mobile-rank">#${index + 1}</span>
 
-      <div class="mobile-card-stats">
-        <span>
-          <small>Casos</small>
-          ${formatNumber(record.count)}
-        </span>
+          <div class="mobile-change-box">
+            <small>vs ${previousYear}</small>
+            ${formatPercentageWithBadge(record.change)}
+          </div>
+        </div>
 
-        <span>
-          <small>Ponderado</small>
-          ${formatNumber(record.weighted_score)}
-        </span>
+        <strong>${escapeHtml(record.crime)}</strong>
 
-        <span>
-          <small>Peso</small>
-          ${formatNumber(record.weight)}
-        </span>
-      </div>
-    </button>
-  `).join("");
+        <div class="mobile-card-stats">
+          <span>
+            <small>Año</small>
+            ${year}
+          </span>
+
+          <span>
+            <small>Casos</small>
+            ${formatNumber(record.count)}
+          </span>
+
+          <span>
+            <small>Ponderado</small>
+            ${formatNumber(record.weighted_score)}
+          </span>
+        </div>
+
+        <div class="mobile-card-compare">
+          Comparación: ${year} frente a ${previousYear}
+        </div>
+      </button>
+    `).join("")}
+  `;
 
   document.querySelectorAll(".mobile-crime-card").forEach(card => {
     card.addEventListener("click", () => {
@@ -871,37 +897,58 @@ function renderMobileTimeline(records, years) {
     return;
   }
 
+  const metricLabel = state.metric === "weighted_score"
+    ? "Índice ponderado"
+    : "Casos registrados";
+
+  const selectedValue = getYearTotal(records, state.selectedYear, state.metric);
+  const selectedPreviousValue = getYearTotal(records, state.selectedYear - 1, state.metric);
+  const selectedChange = calculatePercentageChange(selectedPreviousValue, selectedValue);
+
   const maxValue = Math.max(
-    ...years.map(year => getYearTotal(records, year, "weighted_score")),
+    ...years.map(year => getYearTotal(records, year, state.metric)),
     1
   );
 
-  box.innerHTML = years.map(year => {
-    const value = getYearTotal(records, year, "weighted_score");
-    const previousValue = getYearTotal(records, year - 1, "weighted_score");
-    const change = calculatePercentageChange(previousValue, value);
-    const width = Math.max((value / maxValue) * 100, 4);
+  box.innerHTML = `
+    <div class="mobile-context-card">
+      <span class="mobile-label">Año seleccionado</span>
+      <strong>${state.selectedYear}</strong>
+      <p>
+        ${metricLabel}: <b>${formatNumber(selectedValue)}</b>.
+        Comparación frente a <b>${state.selectedYear - 1}</b>:
+        ${formatPercentageWithBadge(selectedChange)}
+      </p>
+    </div>
 
-    const selectedClass = Number(year) === Number(state.selectedYear) ? "selected" : "";
+    ${years.map(year => {
+      const value = getYearTotal(records, year, state.metric);
+      const previousValue = getYearTotal(records, year - 1, state.metric);
+      const change = calculatePercentageChange(previousValue, value);
+      const width = Math.max((value / maxValue) * 100, 4);
 
-    return `
-      <button class="mobile-year-row ${selectedClass}" type="button" data-year="${year}">
-        <div class="mobile-year-header">
-          <strong>${year}</strong>
-          ${formatPercentageWithBadge(change)}
-        </div>
+      const selectedClass = Number(year) === Number(state.selectedYear) ? "selected" : "";
+      const selectedText = Number(year) === Number(state.selectedYear) ? " · seleccionado" : "";
 
-        <div class="mobile-bar-track">
-          <span class="mobile-bar-fill" style="width: ${width}%"></span>
-        </div>
+      return `
+        <button class="mobile-year-row ${selectedClass}" type="button" data-year="${year}">
+          <div class="mobile-year-header">
+            <strong>${year}${selectedText}</strong>
+            ${formatPercentageWithBadge(change)}
+          </div>
 
-        <div class="mobile-year-footer">
-          <span>Índice ponderado</span>
-          <strong>${formatNumber(value)}</strong>
-        </div>
-      </button>
-    `;
-  }).join("");
+          <div class="mobile-bar-track">
+            <span class="mobile-bar-fill" style="width: ${width}%"></span>
+          </div>
+
+          <div class="mobile-year-footer">
+            <span>${metricLabel} · vs ${year - 1}</span>
+            <strong>${formatNumber(value)}</strong>
+          </div>
+        </button>
+      `;
+    }).join("")}
+  `;
 
   document.querySelectorAll(".mobile-year-row").forEach(row => {
     row.addEventListener("click", () => {
