@@ -160,6 +160,10 @@
           Resumen
         </button>
 
+        <button class="mobile-tab" type="button" data-mobile-view="chart">
+          Gráfica
+        </button>
+
         <button class="mobile-tab" type="button" data-mobile-view="crimes">
           Delitos
         </button>
@@ -177,6 +181,24 @@
           </div>
 
           <div id="mobileSummaryContent"></div>
+        </div>
+      </article>
+
+      <article id="mobileChartView" class="mobile-view">
+        <div class="mobile-panel mobile-chart-panel">
+          <div class="mobile-panel-header">
+            <p class="section-kicker">Gráfica móvil</p>
+            <h2>Evolución agregada</h2>
+            <p>
+              Vista simplificada para móvil. Muestra la evolución total del territorio seleccionado.
+            </p>
+          </div>
+
+          <div class="mobile-chart-wrap">
+            <canvas id="mobileChartCanvas" width="760" height="460"></canvas>
+          </div>
+
+          <div id="mobileChartLegend" class="mobile-chart-legend"></div>
         </div>
       </article>
 
@@ -253,7 +275,7 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel desktop-ranking-panel">
       <div class="panel-header">
         <div>
           <h2 id="rankingTitle">Ranking por delito</h2>
