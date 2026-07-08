@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Observatorio de Severidad Criminal en España</title>
+
+  <meta
+    name="description"
+    content="Dashboard experimental de criminalidad ponderada por severidad en España. Datos oficiales reprocesados con una capa analítica propia."
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+
+      <div>
+        <p class="eyebrow">MVP v0.2 · Índice experimental</p>
+        <h1>Observatorio de Severidad Criminal en España</h1>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <p class="header-note">
+        Datos oficiales de criminalidad registrada reprocesados con una capa experimental de severidad para analizar volumen, gravedad y evolución territorial.
+      </p>
+
+      <button
+        id="menuButton"
+        class="apps-button"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+      >
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+
+  <aside id="sideDrawer" class="side-drawer" aria-label="Menú lateral">
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow">Navegación</p>
+        <h2>Observatorio</h2>
+      </div>
+
+      <button
+        id="closeMenuButton"
+        class="drawer-close"
+        type="button"
+        aria-label="Cerrar menú"
+      >
+        ×
+      </button>
+    </div>
+
+    <nav class="drawer-nav">
+      <a href="index.html">
+        <strong>Dashboard</strong>
+        <span>Explorar datos ponderados por territorio, año y delito.</span>
+      </a>
+
+      <a href="metodologia.html">
+        <strong>Motivo, metodología y Disclaimer legal</strong>
+        <span>Por qué existe el proyecto, límites de uso y advertencias.</span>
+      </a>
+    </nav>
+
+    <div class="drawer-note">
+      <strong>Serie consolidada:</strong>
+      los datos anuales usados en esta versión llegan hasta 2024.
+    </div>
+  </aside>
+
+  <main>
+    <section class="method-warning">
+      <strong>Advertencia metodológica:</strong>
+      este índice no sustituye las estadísticas oficiales. Añade una ponderación experimental para evitar que delitos de baja gravedad oculten variaciones en delitos graves.
+      <br />
+      <strong>Naturaleza del dato:</strong>
+      salvo cuando la fuente oficial distingue expresamente una categoría consumada —como homicidios/asesinatos consumados—, este proyecto trabaja con <strong>hechos conocidos registrados por tipología penal</strong>, no con una clasificación general de delitos consumados frente a tentativas.
+      <br />
+      <strong>Serie actual:</strong>
+      datos anuales consolidados hasta 2024. Los datos posteriores pueden existir en balances provisionales, pero no se integran todavía en este modelo.
+    </section>
+
+    <section class="filters-panel">
+      <label>
+        Territorio
+        <select id="territorySelect"></select>
+      </label>
+
+      <label>
+        Año de análisis
+        <select id="yearSelect"></select>
+      </label>
+
+      <label>
+        Métrica
+        <select id="metricSelect">
+          <option value="weighted_score">Puntuación ponderada</option>
+          <option value="count">Casos registrados</option>
+        </select>
+      </label>
+
+      <label>
+        Vista gráfica
+        <select id="viewSelect">
+          <option value="lines">Líneas por delito</option>
+          <option value="total">Total agregado</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <p class="kpi-label">Índice ponderado</p>
+        <h2 id="kpiWeighted">—</h2>
+        <p id="kpiWeightedContext" class="kpi-context">—</p>
+      </article>
+
+      <article class="kpi-card">
+        <p class="kpi-label">Casos registrados</p>
+        <h2 id="kpiCases">—</h2>
+        <p id="kpiCasesContext" class="kpi-context">—</p>
+      </article>
+
+      <article class="kpi-card">
+        <p class="kpi-label">Variación vs año anterior</p>
+        <h2 id="kpiYoY">—</h2>
+        <p id="kpiYoYContext" class="kpi-context">Sobre índice ponderado</p>
+      </article>
+
+      <article class="kpi-card">
+        <p class="kpi-label">Variación desde 2016</p>
+        <h2 id="kpiSinceBase">—</h2>
+        <p id="kpiSinceBaseContext" class="kpi-context">Base 2016</p>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <h2 id="chartTitle">Evolución</h2>
+            <p id="chartSubtitle">Casos × peso de severidad</p>
+          </div>
+        </div>
+
+        <canvas id="chartCanvas" width="1300" height="650"></canvas>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Lectura del año</h2>
+            <p id="yearPanelSubtitle">Detalle del año seleccionado</p>
+          </div>
+        </div>
+
+        <div id="yearInsightBox" class="insight-box"></div>
+
+        <div class="divider"></div>
+
+        <h3>Celda seleccionada</h3>
+
+        <div id="selectedCellBox" class="selected-cell-box">
+          Selecciona una celda de la tabla anual para ver el detalle.
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Tabla interactiva anual</h2>
+          <p>
+            Cada celda muestra el valor del año y la variación frente al año anterior. Haz clic en una celda para analizarla.
+          </p>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="annual-table">
+          <thead id="annualTableHead"></thead>
+          <tbody id="annualTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 id="rankingTitle">Ranking por delito</h2>
+          <p id="rankingSubtitle">
+            Contribución por categoría en el año seleccionado.
+          </p>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Delito</th>
+              <th>Casos registrados</th>
+              <th>Puntuación ponderada</th>
+              <th>Peso</th>
+              <th>Variación ponderada vs año anterior</th>
+            </tr>
+          </thead>
+
+          <tbody id="rankingBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel methodology-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Pesos del modelo v0.1</h2>
+          <p>
+            Pesos experimentales. En una versión posterior deberían derivarse de Código Penal, penas medias, sentencias efectivas y daño social.
+          </p>
+        </div>
+      </div>
+
+      <div id="weightsBox" class="weights-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Proyecto experimental. Datos base procedentes de fuentes oficiales. Índice propio no oficial. No constituye asesoramiento legal, criminológico, policial, estadístico ni de política pública.
+    </p>
+  </footer>
+
+  <script src="menu.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

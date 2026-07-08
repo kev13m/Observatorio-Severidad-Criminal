@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Metodología y Disclaimer · OSINT Vigilante</title>
+
+  <meta
+    name="description"
+    content="Marco metodológico, límites de uso y disclaimer legal del módulo Observatorio de Severidad Criminal en España, dentro del proyecto personal OSINT Vigilante."
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+
+      <div>
+        <p class="eyebrow">OSINT Vigilante · Marco metodológico y legal</p>
+        <h1>Motivo, límites y Disclaimer del proyecto</h1>
+        <p class="project-label">
+          Proyecto personal de análisis de fuentes abiertas, visualización de datos públicos y lectura crítica de información oficial.
+        </p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <p class="header-note">
+        Esta página explica por qué existe el módulo, qué mide, qué no mide y bajo qué cautelas debe interpretarse.
+      </p>
+
+      <button
+        id="menuButton"
+        class="apps-button"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+      >
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+
+  <aside id="sideDrawer" class="side-drawer" aria-label="Menú lateral">
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow">Navegación</p>
+        <h2>OSINT Vigilante</h2>
+      </div>
+
+      <button
+        id="closeMenuButton"
+        class="drawer-close"
+        type="button"
+        aria-label="Cerrar menú"
+      >
+        ×
+      </button>
+    </div>
+
+    <nav class="drawer-nav">
+      <a href="index.html">
+        <strong>Dashboard</strong>
+        <span>Explorar datos ponderados por territorio, año y delito.</span>
+      </a>
+
+      <a href="metodologia.html">
+        <strong>Motivo, Metodología y Disclaimer legal</strong>
+        <span>Por qué existe el proyecto, límites de uso y advertencias.</span>
+      </a>
+    </nav>
+
+    <div class="drawer-note">
+      <strong>OSINT Vigilante:</strong>
+      proyecto personal de análisis de fuentes abiertas y visualización de datos públicos. Serie anual consolidada hasta 2024.
+    </div>
+  </aside>
+
+  <main class="content-page">
+    <section class="panel page-section">
+      <p class="section-kicker">01 · Identidad del proyecto</p>
+      <h2>Qué es OSINT Vigilante</h2>
+
+      <p>
+        OSINT Vigilante es un proyecto personal orientado a recopilar, estructurar, visualizar y analizar información procedente de fuentes abiertas, especialmente datos públicos oficiales, con el objetivo de hacerlos más comprensibles, trazables y útiles para la lectura crítica.
+      </p>
+
+      <p>
+        El proyecto no pretende sustituir a las fuentes oficiales ni actuar como una autoridad estadística, policial, judicial o institucional. Su finalidad es mejorar la visualización de datos complejos, facilitar su lectura y ofrecer una capa analítica adicional cuando los indicadores agregados puedan resultar insuficientes para entender la realidad observada.
+      </p>
+
+      <p>
+        Dentro de OSINT Vigilante, el Observatorio de Severidad Criminal en España es un módulo experimental centrado en criminalidad registrada. Su objetivo es transformar datos oficiales dispersos o agregados en visualizaciones más legibles, comparables y comprensibles.
+      </p>
+
+      <div class="quote-box">
+        <strong>Definición operativa:</strong>
+        OSINT Vigilante es un proyecto personal de análisis de fuentes abiertas y visualización de datos públicos. No realiza vigilancia privada sobre personas ni sustituye funciones oficiales.
+      </div>
+    </section>
+
+    <section class="panel page-section">
+      <p class="section-kicker">02 · Motivo de creación</p>
+      <h2>Por qué existe este observatorio</h2>
+
+      <p>
+        Este módulo nace de una limitación metodológica concreta: en España no existe, dentro de los portales oficiales consultados, un índice público de criminalidad ponderado por la gravedad, severidad o impacto social de los delitos.
+      </p>
+
+      <p>
+        El Portal Estadístico de Criminalidad del Ministerio del Interior y el Instituto Nacional de Estadística publican datos, series y tasas agregadas de criminalidad. Sin embargo, la tasa básica de criminalidad mide el número total de infracciones penales por población. En ese indicador, un hurto de una maleta y un homicidio doloso incrementan el total en una unidad estadística.
+      </p>
+
+      <p>
+        Esa equivalencia aritmética puede generar una percepción incompleta de la seguridad pública. Una bajada de delitos de menor gravedad puede compensar estadísticamente un aumento de delitos graves, aunque el riesgo social, penal y victimológico haya empeorado.
+      </p>
+
+      <p>
+        Por ese motivo, este observatorio no se limita a contar delitos. Añade una capa experimental de severidad para facilitar una lectura más ajustada de la composición delictiva registrada.
+      </p>
+
+      <div class="quote-box">
+        <strong>Tesis del módulo:</strong>
+        contar delitos no es lo mismo que medir daño criminal. Una sociedad puede registrar menos delitos leves y, al mismo tiempo, sufrir un deterioro en violencia grave.
+      </div>
+    </section>
+
+    <section class="panel page-section">
+      <p class="section-kicker">03 · Qué mide</p>
+      <h2>Qué pretende medir el índice</h2>
+
+      <p>
+        El índice experimental de severidad criminal busca complementar el recuento oficial de infracciones penales con una capa de ponderación. Cada categoría delictiva recibe un peso relativo según su gravedad jurídica, daño social e impacto victimológico aproximado.
+      </p>
+
+      <div class="formula-box">
+        ISC = Σ(casos registrados del delito × peso de severidad)
+      </div>
+
+      <p>
+        Esta versión v0.1 utiliza pesos experimentales. No son pesos oficiales ni definitivos. Su finalidad es construir una herramienta exploratoria que permita comparar la evolución del volumen delictivo frente a la evolución de la severidad criminal registrada.
+      </p>
+
+      <p>
+        El índice no pretende determinar por sí solo si una comunidad autónoma es “segura” o “insegura”. Su función es aportar una perspectiva complementaria: distinguir entre una variación cuantitativa de delitos y una variación cualitativa de gravedad.
+      </p>
+
+      <p>
+        En versiones posteriores, los pesos deberían evolucionar hacia un modelo más robusto, basado en Código Penal español, penas mínimas y máximas, penas efectivamente impuestas, daño a la víctima, violencia empleada, vulnerabilidad de la víctima y posible conexión con criminalidad organizada.
+      </p>
+    </section>
+
+    <section class="panel page-section">
+      <p class="section-kicker">04 · Naturaleza del dato</p>
+      <h2>Hechos conocidos, no criminalidad real total</h2>
+
+      <p>
+        El proyecto trabaja con criminalidad registrada o hechos conocidos. Esto significa que la base del análisis son delitos o infracciones penales conocidos por las Fuerzas y Cuerpos de Seguridad a través de denuncia, actuación policial u otros mecanismos de registro.
+      </p>
+
+      <p>
+        Esa categoría no equivale necesariamente a la criminalidad real total. Pueden existir delitos no denunciados, hechos no detectados, variaciones en la propensión a denunciar, cambios en los recursos policiales, modificaciones de clasificación o diferencias territoriales de registro.
+      </p>
+
+      <p>
+        Salvo cuando la fuente oficial distingue expresamente una categoría consumada —como homicidios dolosos/asesinatos consumados—, este observatorio no interpreta el resto de categorías como “delitos consumados” en sentido técnico penal. Se tratan como hechos conocidos registrados por tipología penal.
+      </p>
+
+      <div class="quote-box">
+        <strong>Criterio de lectura:</strong>
+        homicidios consumados se tratan como categoría específica; las tentativas de homicidio se calculan como diferencia entre homicidios/asesinatos totales y homicidios/asesinatos consumados. El resto de categorías se interpretan como hechos conocidos registrados.
+      </div>
+    </section>
+
+    <section class="panel page-section">
+      <p class="section-kicker">05 · Referencias internacionales</p>
+      <h2>Modelos comparables</h2>
+
+      <p>
+        La lógica de este proyecto se aproxima a modelos internacionales como el Crime Severity Index canadiense o el Crime Severity Score desarrollado en Reino Unido. Estos modelos no se limitan a contar delitos, sino que asignan pesos superiores a los hechos de mayor gravedad.
+      </p>
+
+      <p>
+        En Canadá, los pesos del Crime Severity Index se actualizan periódicamente para reflejar cambios legislativos y prácticas de sentencia. En Reino Unido, la Office for National Statistics desarrolló un Crime Severity Score usando información de sentencias para asignar mayor peso a las categorías delictivas más graves.
+      </p>
+
+      <p>
+        OSINT Vigilante no replica todavía esos modelos de forma oficial o académicamente validada. La versión actual debe entenderse como una adaptación experimental orientada a mejorar la visualización y la comprensión pública de los datos.
+      </p>
+
+      <div class="link-grid">
+        <a
+          href="https://www.statcan.gc.ca/en/statistical-programs/document/3302_D16_V1"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <strong>Statistics Canada</strong>
+          <span>Crime Severity Index</span>
+        </a>
+
+        <a
+          href="https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice/articles/researchoutputsdevelopingacrimeseverityscoreforenglandandwalesusingdataoncrimesrecordedbythepolice/2016-11-29"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <strong>ONS Reino Unido</strong>
+          <span>Crime Severity Score</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="panel page-section">
+      <p class="section-kicker">06 · Fuentes y alcance temporal</p>
+      <h2>Fuentes utilizadas</h2>
+
+      <p>
+        La base del proyecto son datos oficiales de criminalidad registrada. La fuente principal para el dataset anual es el Portal Estadístico de Criminalidad del Ministerio del Interior. Para tasas por población, el proyecto prevé integrar datos del Instituto Nacional de Estadística.
+      </p>
+
+      <p>
+        En la versión actual, el conjunto de datos anual consolidado se limita al periodo 2016–2024. Los datos de 2025 o posteriores pueden aparecer en balances trimestrales o provisionales, pero no se integran todavía en esta versión para evitar mezclar series consolidadas con datos sujetos a revisión.
+      </p>
+
+      <p>
+        La decisión de trabajar con datos anuales consolidados hasta 2024 responde a un criterio de consistencia metodológica. La incorporación de datos provisionales requerirá una etiqueta separada, controles de versión y advertencias específicas.
+      </p>
+
+      <div class="link-grid">
+        <a
+          href="https://estadisticasdecriminalidad.ses.mir.es/publico/portalestadistico/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <strong>Ministerio del Interior</strong>
+          <span>Portal Estadístico de Criminalidad</span>
+        </a>
+
+        <a
+          href="https://www.ine.es/jaxiT3/Tabla.htm?t=74615"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <strong>INE</strong>
+          <span>Tasa de homicidios y criminalidad por comunidad autónoma</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="panel page-section legal-panel">
+      <p class="section-kicker">07 · Disclaimer legal y metodológico</p>
+      <h2>Advertencias de uso</h2>
+
+      <div class="legal-list">
+        <p>
+          <strong>1. Proyecto personal, experimental e independiente.</strong>
+          OSINT Vigilante es un proyecto personal, independiente, experimental y exploratorio. No es una estadística oficial, no representa al Ministerio del Interior, al INE, a ninguna administración pública ni a ningún organismo judicial, policial o académico.
+        </p>
+
+        <p>
+          <strong>2. Proyecto OSINT basado en fuentes abiertas.</strong>
+          OSINT Vigilante trabaja exclusivamente con fuentes abiertas, datos públicos, documentación accesible y análisis propio. No realiza vigilancia privada, no accede a sistemas restringidos, no identifica personas particulares como objeto de seguimiento y no debe interpretarse como una actividad policial, judicial, investigadora oficial ni de inteligencia estatal.
+        </p>
+
+        <p>
+          <strong>3. No sustituye fuentes oficiales.</strong>
+          Los resultados publicados deben interpretarse como una capa analítica derivada de datos oficiales, no como sustituto de los balances, series o tasas oficiales. Ante cualquier discrepancia, prevalece siempre la fuente oficial.
+        </p>
+
+        <p>
+          <strong>4. No acredita criminalidad real total.</strong>
+          El índice trabaja con criminalidad registrada o hechos conocidos. No mide delitos no denunciados, delitos no detectados, cambios en la propensión a denunciar, variaciones en recursos policiales, modificaciones de clasificación penal ni alteraciones operativas en el registro.
+        </p>
+
+        <p>
+          <strong>5. No formula acusaciones.</strong>
+          El uso de este índice no implica, por sí mismo, acusación contra personas, territorios, instituciones, colectivos o administraciones. Tampoco prueba manipulación, ocultación, negligencia, infradenuncia ni mala fe institucional.
+        </p>
+
+        <p>
+          <strong>6. Pesos no oficiales.</strong>
+          Los pesos de severidad utilizados en la versión v0.1 son experimentales. Responden a una hipótesis analítica razonada, pero no han sido aprobados por una autoridad pública ni validados judicial, estadística o académicamente como estándar oficial.
+        </p>
+
+        <p>
+          <strong>7. Limitación interpretativa.</strong>
+          Un aumento del índice ponderado no debe interpretarse automáticamente como prueba concluyente de deterioro estructural de la seguridad. Puede estar influido por cambios de denuncia, persecución policial, clasificación, población, presión turística, reformas legales o mejoras de registro.
+        </p>
+
+        <p>
+          <strong>8. No es asesoramiento legal, policial ni estadístico profesional.</strong>
+          La información publicada tiene finalidad informativa, investigadora y divulgativa. No constituye asesoramiento jurídico, criminológico, policial, financiero, político, estadístico ni de política pública.
+        </p>
+
+        <p>
+          <strong>9. Uso responsable.</strong>
+          Cualquier uso periodístico, académico, institucional o político debería citar la metodología, la versión del modelo, el periodo analizado, las fuentes oficiales de origen y las limitaciones del índice.
+        </p>
+
+        <p>
+          <strong>10. Derecho de revisión.</strong>
+          El modelo puede ser corregido, actualizado o sustituido si se detectan errores de datos, cambios en fuentes oficiales, mejoras metodológicas o una ponderación más sólida basada en evidencia penal, judicial o estadística.
+        </p>
+
+        <p>
+          <strong>11. Prohibición de uso descontextualizado.</strong>
+          Los datos no deberían utilizarse para extraer conclusiones absolutas sobre territorios, colectivos o administraciones sin atender al periodo analizado, la metodología, la población, la composición delictiva, los cambios de registro y las advertencias publicadas.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel page-section">
+      <p class="section-kicker">08 · Estado actual</p>
+      <h2>Versión v0.1</h2>
+
+      <p>
+        La versión actual debe entenderse como un prototipo. Su función principal es demostrar que una lectura ponderada puede ofrecer una perspectiva distinta a la criminalidad agregada tradicional.
+      </p>
+
+      <p>
+        El siguiente paso metodológico será construir un modelo de pesos más sólido, documentar categoría por categoría el motivo de cada ponderación y añadir tasas ponderadas por 100.000 habitantes.
+      </p>
+
+      <p>
+        También será necesario diferenciar entre datos consolidados, datos provisionales y futuras actualizaciones. Esa distinción es esencial para evitar mezclar series históricas estables con balances sujetos a revisión.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      OSINT Vigilante · Proyecto personal experimental. Datos base procedentes de fuentes oficiales. Índice propio no oficial.
+    </p>
+  </footer>
+
+  <script src="menu.js"></script>
+</body>
+</html>
