@@ -24,21 +24,26 @@ const chartColors = [
 
 async function init() {
   try {
-    const [recordsResponse, weightsResponse] = await Promise.all([
-      fetch("./data/records.json"),
-      fetch("./data/weights.json")
+    const recordsPayload = await fetchJsonWithFallback([
+      "./data/records.json",
+      "./data/Records.Json",
+      "data/records.json",
+      "data/Records.Json"
     ]);
 
-    if (!recordsResponse.ok) {
-      throw new Error(`No se pudo cargar records.json: ${recordsResponse.status}`);
-    }
+    const weightsPayload = await fetchJsonWithFallback([
+      "./data/weights.json",
+      "./data/Weights.Json",
+      "data/weights.json",
+      "data/Weights.Json"
+    ]);
 
-    if (!weightsResponse.ok) {
-      throw new Error(`No se pudo cargar weights.json: ${weightsResponse.status}`);
-    }
+    state.weights = normalizeWeights(weightsPayload);
+    state.records = normalizeRecords(recordsPayload, state.weights);
 
-    state.records = await recordsResponse.json();
-    state.weights = await weightsResponse.json();
+    if (!state.records.length) {
+      throw new Error("records.json se ha cargado, pero no contiene registros válidos.");
+    }
 
     populateControls();
     setupMobileTabs();
@@ -50,21 +55,178 @@ async function init() {
   }
 }
 
-function showFatalError(error) {
-  const main = document.querySelector("main");
+async function fetchJsonWithFallback(urls) {
+  let lastError = null;
 
-  if (!main) {
-    return;
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, { cache: "no-store" });
+
+      if (!response.ok) {
+        lastError = new Error(`${url} devolvió HTTP ${response.status}`);
+        continue;
+      }
+
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  main.insertAdjacentHTML("afterbegin", `
-    <section class="method-warning">
-      <strong>Error de carga:</strong>
-      no se han podido cargar los datos de la aplicación.
-      <br />
-      Detalle técnico: ${escapeHtml(error.message)}
-    </section>
-  `);
+  throw lastError || new Error("No se pudo cargar el archivo JSON.");
+}
+
+function normalizeWeights(payload) {
+  const weights = {};
+
+  if (Array.isArray(payload)) {
+    payload.forEach(item => {
+      const crime = pick(item, ["crime", "delito", "Delito", "category", "categoria", "Categoría"]);
+      const weight = pick(item, ["weight", "peso", "Peso", "value", "valor", "Valor"]);
+
+      if (crime) {
+        weights[String(crime).trim()] = parseFlexibleNumber(weight);
+      }
+    });
+
+    return weights;
+  }
+
+  if (payload && typeof payload === "object") {
+    Object.entries(payload).forEach(([crime, weight]) => {
+      weights[String(crime).trim()] = parseFlexibleNumber(weight);
+    });
+  }
+
+  return weights;
+}
+
+function normalizeRecords(payload, weights) {
+  const rows = unwrapArray(payload);
+
+  return rows
+    .map(row => normalizeRecord(row, weights))
+    .filter(record => {
+      return (
+        record.territory &&
+        record.crime &&
+        Number.isFinite(record.year) &&
+        Number.isFinite(record.count)
+      );
+    });
+}
+
+function normalizeRecord(row, weights) {
+  const territory = cleanText(pick(row, [
+    "territory",
+    "Territory",
+    "territorio",
+    "Territorio",
+    "ccaa",
+    "CCAA",
+    "comunidad",
+    "Comunidad",
+    "comunidad_autonoma",
+    "Comunidad Autónoma"
+  ]));
+
+  const year = parseFlexibleNumber(pick(row, [
+    "year",
+    "Year",
+    "año",
+    "Año",
+    "anio",
+    "Anio",
+    "period",
+    "Period",
+    "periodo",
+    "Periodo"
+  ]));
+
+  const crime = cleanText(pick(row, [
+    "crime",
+    "Crime",
+    "delito",
+    "Delito",
+    "category",
+    "Category",
+    "categoria",
+    "Categoría",
+    "tipologia",
+    "Tipología",
+    "tipologia_penal",
+    "Tipología penal"
+  ]));
+
+  const count = parseFlexibleNumber(pick(row, [
+    "count",
+    "Count",
+    "casos",
+    "Casos",
+    "hechos",
+    "Hechos",
+    "value",
+    "Value",
+    "valor",
+    "Valor",
+    "num",
+    "NUM"
+  ]));
+
+  const explicitWeight = pick(row, [
+    "weight",
+    "Weight",
+    "peso",
+    "Peso"
+  ]);
+
+  const weight = explicitWeight !== undefined && explicitWeight !== null && explicitWeight !== ""
+    ? parseFlexibleNumber(explicitWeight)
+    : parseFlexibleNumber(weights[crime] || 0);
+
+  const explicitWeightedScore = pick(row, [
+    "weighted_score",
+    "weightedScore",
+    "Weighted_score",
+    "WeightedScore",
+    "puntuacion_ponderada",
+    "Puntuación ponderada",
+    "score",
+    "Score"
+  ]);
+
+  const weighted_score = explicitWeightedScore !== undefined && explicitWeightedScore !== null && explicitWeightedScore !== ""
+    ? parseFlexibleNumber(explicitWeightedScore)
+    : count * weight;
+
+  return {
+    territory,
+    year,
+    crime,
+    count,
+    weight,
+    weighted_score
+  };
+}
+
+function unwrapArray(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const possibleKeys = ["records", "data", "items", "rows", "result", "results"];
+
+  for (const key of possibleKeys) {
+    if (Array.isArray(payload[key])) {
+      return payload[key];
+    }
+  }
+
+  return [];
 }
 
 function populateControls() {
@@ -74,12 +236,24 @@ function populateControls() {
   const viewSelect = document.getElementById("viewSelect");
 
   if (!territorySelect || !yearSelect) {
-    console.warn("No existen los selectores principales.");
-    return;
+    throw new Error("No existen los selectores territorySelect/yearSelect en index.html.");
   }
 
-  const territories = [...new Set(state.records.map(record => record.territory))].sort();
-  const years = [...new Set(state.records.map(record => Number(record.year)))].sort((a, b) => a - b);
+  const territories = [...new Set(state.records.map(record => record.territory))]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "es"));
+
+  const years = [...new Set(state.records.map(record => record.year))]
+    .filter(year => Number.isFinite(year))
+    .sort((a, b) => a - b);
+
+  if (!territories.length) {
+    throw new Error("No se han encontrado territorios válidos en records.json.");
+  }
+
+  if (!years.length) {
+    throw new Error("No se han encontrado años válidos en records.json.");
+  }
 
   territorySelect.innerHTML = "";
   yearSelect.innerHTML = "";
@@ -93,8 +267,8 @@ function populateControls() {
 
   years.forEach(year => {
     const option = document.createElement("option");
-    option.value = year;
-    option.textContent = year;
+    option.value = String(year);
+    option.textContent = String(year);
     yearSelect.appendChild(option);
   });
 
@@ -102,7 +276,7 @@ function populateControls() {
   state.selectedYear = Math.max(...years);
 
   territorySelect.value = state.territory;
-  yearSelect.value = state.selectedYear;
+  yearSelect.value = String(state.selectedYear);
 
   territorySelect.addEventListener("change", event => {
     state.territory = event.target.value;
@@ -165,9 +339,7 @@ function setupMobileTabs() {
       }
 
       if (target === "chart") {
-        const records = getTerritoryRecords();
-        const years = getYears(records);
-        renderMobileChart(records, years);
+        renderMobileChart(getTerritoryRecords(), getYears(getTerritoryRecords()));
       }
     });
   });
@@ -178,6 +350,11 @@ function render() {
   const years = getYears(records);
 
   if (!records.length || !years.length) {
+    console.warn("No hay registros para renderizar.", {
+      territory: state.territory,
+      selectedYear: state.selectedYear
+    });
+
     return;
   }
 
@@ -204,15 +381,21 @@ function getTerritoryRecords() {
 }
 
 function getYears(records) {
-  return [...new Set(records.map(record => Number(record.year)))].sort((a, b) => a - b);
+  return [...new Set(records.map(record => record.year))]
+    .filter(year => Number.isFinite(year))
+    .sort((a, b) => a - b);
 }
 
 function getCrimes(records) {
-  return [...new Set(records.map(record => record.crime))].sort();
+  return [...new Set(records.map(record => record.crime))]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "es"));
 }
 
 function getRecord(records, crime, year) {
-  return records.find(record => record.crime === crime && Number(record.year) === Number(year));
+  return records.find(record => {
+    return record.crime === crime && Number(record.year) === Number(year);
+  });
 }
 
 function getYearTotal(records, year, field) {
@@ -222,9 +405,7 @@ function getYearTotal(records, year, field) {
 }
 
 function getCrimeSeries(records, years) {
-  const crimes = getCrimes(records);
-
-  return crimes.map(crime => ({
+  return getCrimes(records).map(crime => ({
     name: crime,
     values: years.map(year => {
       const item = getRecord(records, crime, year);
@@ -349,18 +530,12 @@ function renderAnnualTable(records, years) {
 
   years.forEach(year => {
     const th = document.createElement("th");
-    th.textContent = year;
+    th.textContent = String(year);
     th.className = "year-header";
 
     th.addEventListener("click", () => {
       state.selectedYear = year;
-
-      const yearSelect = document.getElementById("yearSelect");
-
-      if (yearSelect) {
-        yearSelect.value = year;
-      }
-
+      syncYearSelect();
       state.selectedCell = null;
       render();
     });
@@ -370,9 +545,7 @@ function renderAnnualTable(records, years) {
 
   head.appendChild(headerRow);
 
-  const crimes = getCrimes(records);
-
-  crimes.forEach(crime => {
+  getCrimes(records).forEach(crime => {
     const row = document.createElement("tr");
 
     const crimeCell = document.createElement("td");
@@ -406,19 +579,9 @@ function renderAnnualTable(records, years) {
       td.title = `${crime} · ${year}`;
 
       td.addEventListener("click", () => {
-        state.selectedCell = {
-          crime,
-          year
-        };
-
+        state.selectedCell = { crime, year };
         state.selectedYear = year;
-
-        const yearSelect = document.getElementById("yearSelect");
-
-        if (yearSelect) {
-          yearSelect.value = year;
-        }
-
+        syncYearSelect();
         render();
       });
 
@@ -450,10 +613,7 @@ function renderRanking(records) {
         ? null
         : calculatePercentageChange(previousWeighted, record.weighted_score);
 
-      return {
-        ...record,
-        change
-      };
+      return { ...record, change };
     })
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score));
 
@@ -494,9 +654,10 @@ function renderSelectedCell(records) {
     return;
   }
 
-  const value = Number(record[state.metric]);
   const previousValue = previousRecord ? Number(previousRecord[state.metric]) : null;
-  const change = previousValue === null ? null : calculatePercentageChange(previousValue, value);
+  const change = previousValue === null
+    ? null
+    : calculatePercentageChange(previousValue, Number(record[state.metric]));
 
   box.innerHTML = `
     <p><strong>${escapeHtml(crime)}</strong></p>
@@ -610,10 +771,7 @@ function renderMobileCrimeCards(records) {
         ? null
         : calculatePercentageChange(previousWeighted, record.weighted_score);
 
-      return {
-        ...record,
-        change
-      };
+      return { ...record, change };
     })
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score));
 
@@ -621,7 +779,7 @@ function renderMobileCrimeCards(records) {
     <button
       class="mobile-crime-card"
       type="button"
-      data-crime="${escapeHtmlAttribute(record.crime)}"
+      data-crime="${encodeURIComponent(record.crime)}"
       data-year="${year}"
     >
       <div class="mobile-card-top">
@@ -653,18 +811,12 @@ function renderMobileCrimeCards(records) {
   document.querySelectorAll(".mobile-crime-card").forEach(card => {
     card.addEventListener("click", () => {
       state.selectedCell = {
-        crime: card.dataset.crime,
+        crime: decodeURIComponent(card.dataset.crime),
         year: Number(card.dataset.year)
       };
 
       state.selectedYear = Number(card.dataset.year);
-
-      const yearSelect = document.getElementById("yearSelect");
-
-      if (yearSelect) {
-        yearSelect.value = state.selectedYear;
-      }
-
+      syncYearSelect();
       render();
     });
   });
@@ -713,13 +865,7 @@ function renderMobileTimeline(records, years) {
     row.addEventListener("click", () => {
       state.selectedYear = Number(row.dataset.year);
       state.selectedCell = null;
-
-      const yearSelect = document.getElementById("yearSelect");
-
-      if (yearSelect) {
-        yearSelect.value = state.selectedYear;
-      }
-
+      syncYearSelect();
       render();
     });
   });
@@ -774,13 +920,7 @@ function renderMobileChart(records, years) {
     row.addEventListener("click", () => {
       state.selectedYear = Number(row.dataset.year);
       state.selectedCell = null;
-
-      const yearSelect = document.getElementById("yearSelect");
-
-      if (yearSelect) {
-        yearSelect.value = state.selectedYear;
-      }
-
+      syncYearSelect();
       render();
       activateMobileView("chart");
     });
@@ -1021,6 +1161,67 @@ function formatCompactNumber(value) {
   return Math.round(number).toLocaleString("es-ES");
 }
 
+function parseFlexibleNumber(value) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (value === null || value === undefined || value === "") {
+    return 0;
+  }
+
+  let text = String(value).trim();
+
+  if (!text) {
+    return 0;
+  }
+
+  text = text.replace(/\s/g, "");
+
+  if (text.includes(",") && text.includes(".")) {
+    if (text.lastIndexOf(",") > text.lastIndexOf(".")) {
+      text = text.replace(/\./g, "").replace(",", ".");
+    } else {
+      text = text.replace(/,/g, "");
+    }
+  } else if (text.includes(",")) {
+    text = text.replace(",", ".");
+  }
+
+  text = text.replace(/[^\d.-]/g, "");
+
+  const number = Number(text);
+
+  return Number.isFinite(number) ? number : 0;
+}
+
+function pick(object, keys) {
+  if (!object || typeof object !== "object") {
+    return undefined;
+  }
+
+  for (const key of keys) {
+    if (
+      Object.prototype.hasOwnProperty.call(object, key) &&
+      object[key] !== undefined &&
+      object[key] !== null &&
+      object[key] !== ""
+    ) {
+      return object[key];
+    }
+  }
+
+  return undefined;
+}
+
+function cleanText(value) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return String(value).trim();
+}
+
 function setText(id, value) {
   const element = document.getElementById(id);
 
@@ -1037,6 +1238,14 @@ function setHTML(id, value) {
   }
 }
 
+function syncYearSelect() {
+  const yearSelect = document.getElementById("yearSelect");
+
+  if (yearSelect) {
+    yearSelect.value = String(state.selectedYear);
+  }
+}
+
 function capitalize(value) {
   if (!value) {
     return "";
@@ -1046,16 +1255,29 @@ function capitalize(value) {
 }
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  return String(value === null || value === undefined ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-function escapeHtmlAttribute(value) {
-  return escapeHtml(value).replaceAll("`", "&#096;");
+function showFatalError(error) {
+  const main = document.querySelector("main");
+
+  if (!main) {
+    return;
+  }
+
+  main.insertAdjacentHTML("afterbegin", `
+    <section class="method-warning">
+      <strong>Error de carga:</strong>
+      no se han podido cargar los datos de la aplicación.
+      <br />
+      Detalle técnico: ${escapeHtml(error.message)}
+    </section>
+  `);
 }
 
 init();
