@@ -123,12 +123,11 @@ function setupMobileTabs() {
       if (target === "chart") {
         const records = getTerritoryRecords();
         const years = getYears(records);
-        drawMobileChart(records, years);
+        renderMobileChart(records, years);
       }
     });
   });
 }
-
 function render() {
   const records = getTerritoryRecords();
   const years = getYears(records);
@@ -148,8 +147,9 @@ function render() {
   renderMobileSummary(records);
   renderMobileCrimeCards(records);
   renderMobileTimeline(records, years);
-  drawMobileChart(records, years);
+  renderMobileChart(records, years);
 }
+
 
 function getTerritoryRecords() {
   return state.records.filter(record => record.territory === state.territory);
@@ -755,13 +755,86 @@ function drawLegend(ctx, series, margin) {
   });
 }
 
-function drawMobileChart(records, years) {
-  const canvas = document.getElementById("mobileChartCanvas");
-  const legend = document.getElementById("mobileChartLegend");
+function renderMobileChart(records, years) {
+  const box = document.getElementById("mobileChartContent");
 
-  if (!canvas) {
+  if (!box) {
     return;
   }
+
+  const field = state.metric;
+
+  const metricLabel = field === "weighted_score"
+    ? "Índice ponderado"
+    : "Casos registrados";
+
+  const values = years.map(year => ({
+    year,
+    value: getYearTotal(records, year, field),
+    previousValue: getYearTotal(records, year - 1, field)
+  }));
+
+  const maxValue = Math.max(...values.map(item => item.value), 1);
+
+  box.innerHTML = values.map(item => {
+    const change = calculatePercentageChange(item.previousValue, item.value);
+    const width = Math.max((item.value / maxValue) * 100, 5);
+    const selectedClass = item.year === state.selectedYear ? "selected" : "";
+
+    return `
+      <button class="mobile-graph-row ${selectedClass}" type="button" data-year="${item.year}">
+        <div class="mobile-graph-header">
+          <strong>${item.year}</strong>
+          ${formatPercentageWithBadge(change)}
+        </div>
+
+        <div class="mobile-graph-track">
+          <span class="mobile-graph-fill" style="width: ${width}%"></span>
+        </div>
+
+        <div class="mobile-graph-footer">
+          <span>${metricLabel}</span>
+          <strong>${formatNumber(item.value)}</strong>
+        </div>
+      </button>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".mobile-graph-row").forEach(row => {
+    row.addEventListener("click", () => {
+      state.selectedYear = Number(row.dataset.year);
+      state.selectedCell = null;
+
+      const yearSelect = document.getElementById("yearSelect");
+
+      if (yearSelect) {
+        yearSelect.value = state.selectedYear;
+      }
+
+      render();
+
+      const chartTab = document.querySelector('[data-mobile-view="chart"]');
+      const chartView = document.getElementById("mobileChartView");
+
+      document.querySelectorAll(".mobile-tab").forEach(tab => {
+        tab.classList.remove("active");
+      });
+
+      document.querySelectorAll(".mobile-view").forEach(view => {
+        view.classList.remove("active");
+      });
+
+      if (chartTab) {
+        chartTab.classList.add("active");
+      }
+
+      if (chartView) {
+        chartView.classList.add("active");
+      }
+    });
+  });
+}
+  
 
   const ctx = canvas.getContext("2d");
 
@@ -813,7 +886,6 @@ function drawMobileChart(records, years) {
       </div>
     `;
   }
-}
 
 function drawMobileChartGrid(ctx, width, margin, plotHeight, maxValue) {
   ctx.strokeStyle = "#e5e7eb";
