@@ -26,15 +26,15 @@ async function init() {
   try {
     const recordsPayload = await fetchJsonWithFallback([
       "./data/records.json",
-      "./data/Records.Json",
       "data/records.json",
+      "./data/Records.Json",
       "data/Records.Json"
     ]);
 
     const weightsPayload = await fetchJsonWithFallback([
       "./data/weights.json",
-      "./data/Weights.Json",
       "data/weights.json",
+      "./data/Weights.Json",
       "data/Weights.Json"
     ]);
 
@@ -60,7 +60,9 @@ async function fetchJsonWithFallback(urls) {
 
   for (const url of urls) {
     try {
-      const response = await fetch(url, { cache: "no-store" });
+      const response = await fetch(url, {
+        cache: "no-store"
+      });
 
       if (!response.ok) {
         lastError = new Error(`${url} devolvió HTTP ${response.status}`);
@@ -81,11 +83,30 @@ function normalizeWeights(payload) {
 
   if (Array.isArray(payload)) {
     payload.forEach(item => {
-      const crime = pick(item, ["crime", "delito", "Delito", "category", "categoria", "Categoría"]);
-      const weight = pick(item, ["weight", "peso", "Peso", "value", "valor", "Valor"]);
+      const crime = pick(item, [
+        "crime",
+        "Crime",
+        "delito",
+        "Delito",
+        "category",
+        "Category",
+        "categoria",
+        "Categoría"
+      ]);
+
+      const weight = pick(item, [
+        "weight",
+        "Weight",
+        "peso",
+        "Peso",
+        "value",
+        "Value",
+        "valor",
+        "Valor"
+      ]);
 
       if (crime) {
-        weights[String(crime).trim()] = parseFlexibleNumber(weight);
+        weights[cleanText(crime)] = parseFlexibleNumber(weight);
       }
     });
 
@@ -94,7 +115,7 @@ function normalizeWeights(payload) {
 
   if (payload && typeof payload === "object") {
     Object.entries(payload).forEach(([crime, weight]) => {
-      weights[String(crime).trim()] = parseFlexibleNumber(weight);
+      weights[cleanText(crime)] = parseFlexibleNumber(weight);
     });
   }
 
@@ -218,7 +239,14 @@ function unwrapArray(payload) {
     return [];
   }
 
-  const possibleKeys = ["records", "data", "items", "rows", "result", "results"];
+  const possibleKeys = [
+    "records",
+    "data",
+    "items",
+    "rows",
+    "result",
+    "results"
+  ];
 
   for (const key of possibleKeys) {
     if (Array.isArray(payload[key])) {
@@ -324,7 +352,9 @@ function setupMobileTabs() {
     tab.addEventListener("click", () => {
       const target = tab.dataset.mobileView;
 
-      tabs.forEach(item => item.classList.remove("active"));
+      tabs.forEach(item => {
+        item.classList.remove("active");
+      });
 
       Object.values(views).forEach(view => {
         if (view) {
@@ -339,7 +369,7 @@ function setupMobileTabs() {
       }
 
       if (target === "chart") {
-        renderMobileChart(getTerritoryRecords(), getYears(getTerritoryRecords()));
+        renderMobileChartPlaceholder();
       }
     });
   });
@@ -373,7 +403,7 @@ function render() {
   renderMobileSummary(records);
   renderMobileCrimeCards(records);
   renderMobileTimeline(records, years);
-  renderMobileChart(records, years);
+  renderMobileChartPlaceholder();
 }
 
 function getTerritoryRecords() {
@@ -535,8 +565,8 @@ function renderAnnualTable(records, years) {
 
     th.addEventListener("click", () => {
       state.selectedYear = year;
-      syncYearSelect();
       state.selectedCell = null;
+      syncYearSelect();
       render();
     });
 
@@ -558,7 +588,9 @@ function renderAnnualTable(records, years) {
 
       const value = record ? Number(record[state.metric]) : 0;
       const previousValue = previousRecord ? Number(previousRecord[state.metric]) : null;
-      const change = previousValue === null ? null : calculatePercentageChange(previousValue, value);
+      const change = previousValue === null
+        ? null
+        : calculatePercentageChange(previousValue, value);
 
       const td = document.createElement("td");
       td.className = "annual-cell";
@@ -579,7 +611,11 @@ function renderAnnualTable(records, years) {
       td.title = `${crime} · ${year}`;
 
       td.addEventListener("click", () => {
-        state.selectedCell = { crime, year };
+        state.selectedCell = {
+          crime,
+          year
+        };
+
         state.selectedYear = year;
         syncYearSelect();
         render();
@@ -613,7 +649,10 @@ function renderRanking(records) {
         ? null
         : calculatePercentageChange(previousWeighted, record.weighted_score);
 
-      return { ...record, change };
+      return {
+        ...record,
+        change
+      };
     })
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score));
 
@@ -714,79 +753,6 @@ function renderMobileSummary(records) {
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score))[0];
 
   box.innerHTML = `
-    <button class="mobile-summary-card primary mobile-chart-cta" type="button">
-      <span class="mobile-label">${escapeHtml(state.territory)}</span>
-      <strong>${year}</strong>
-      <p>
-        Abrir tabla interactiva anual del territorio seleccionado.
-      </p>
-    </button>
-
-    <div class="mobile-metric-grid">
-      <div class="mobile-metric">
-        <span>Índice ponderado</span>
-        <strong>${formatNumber(weightedCurrent)}</strong>
-        <small>vs ${previousYear}: ${formatPercentage(weightedChange)}</small>
-      </div>
-
-      <div class="mobile-metric">
-        <span>Casos registrados</span>
-        <strong>${formatNumber(casesCurrent)}</strong>
-        <small>vs ${previousYear}: ${formatPercentage(casesChange)}</small>
-      </div>
-    </div>
-
-    <div class="mobile-summary-card">
-      <span class="mobile-label">Mayor contribución en ${year}</span>
-      <strong>${topCrime ? escapeHtml(topCrime.crime) : "n/a"}</strong>
-      <p>
-        ${
-          topCrime
-            ? `${formatNumber(topCrime.weighted_score)} puntos ponderados · ${formatNumber(topCrime.count)} casos registrados.`
-            : "No hay datos disponibles."
-        }
-      </p>
-    </div>
-
-    <div class="mobile-note-box">
-      El índice mide severidad registrada, no criminalidad real total ni delitos no denunciados.
-    </div>
-  `;
-
-  const cta = box.querySelector(".mobile-chart-cta");
-
-  if (cta) {
-    cta.addEventListener("click", () => {
-      activateMobileView("chart");
-
-      const mobileDashboard = document.querySelector(".mobile-dashboard");
-
-      if (mobileDashboard) {
-        mobileDashboard.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      }
-    });
-  }
-}
-
-  const year = state.selectedYear;
-  const previousYear = year - 1;
-
-  const weightedCurrent = getYearTotal(records, year, "weighted_score");
-  const weightedPrevious = getYearTotal(records, previousYear, "weighted_score");
-  const casesCurrent = getYearTotal(records, year, "count");
-  const casesPrevious = getYearTotal(records, previousYear, "count");
-
-  const weightedChange = calculatePercentageChange(weightedPrevious, weightedCurrent);
-  const casesChange = calculatePercentageChange(casesPrevious, casesCurrent);
-
-  const topCrime = records
-    .filter(record => Number(record.year) === Number(year))
-    .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score))[0];
-
-  box.innerHTML = `
     <div class="mobile-summary-card primary">
       <span class="mobile-label">${escapeHtml(state.territory)}</span>
       <strong>${year}</strong>
@@ -823,7 +789,7 @@ function renderMobileSummary(records) {
       El índice mide severidad registrada, no criminalidad real total ni delitos no denunciados.
     </div>
   `;
-
+}
 
 function renderMobileCrimeCards(records) {
   const box = document.getElementById("mobileCrimeCards");
@@ -844,7 +810,10 @@ function renderMobileCrimeCards(records) {
         ? null
         : calculatePercentageChange(previousWeighted, record.weighted_score);
 
-      return { ...record, change };
+      return {
+        ...record,
+        change
+      };
     })
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score));
 
@@ -944,60 +913,25 @@ function renderMobileTimeline(records, years) {
   });
 }
 
-function renderMobileChart(records, years) {
+function renderMobileChartPlaceholder() {
   const box = document.getElementById("mobileChartContent");
 
   if (!box) {
     return;
   }
 
-  const field = state.metric;
-
-  const metricLabel = field === "weighted_score"
-    ? "Índice ponderado"
-    : "Casos registrados";
-
-  const values = years.map(year => ({
-    year,
-    value: getYearTotal(records, year, field),
-    previousValue: getYearTotal(records, year - 1, field)
-  }));
-
-  const maxValue = Math.max(...values.map(item => item.value), 1);
-
-  box.innerHTML = values.map(item => {
-    const change = calculatePercentageChange(item.previousValue, item.value);
-    const width = Math.max((item.value / maxValue) * 100, 5);
-    const selectedClass = Number(item.year) === Number(state.selectedYear) ? "selected" : "";
-
-    return `
-      <button class="mobile-graph-row ${selectedClass}" type="button" data-year="${item.year}">
-        <div class="mobile-graph-header">
-          <strong>${item.year}</strong>
-          ${formatPercentageWithBadge(change)}
-        </div>
-
-        <div class="mobile-graph-track">
-          <span class="mobile-graph-fill" style="width: ${width}%"></span>
-        </div>
-
-        <div class="mobile-graph-footer">
-          <span>${metricLabel}</span>
-          <strong>${formatNumber(item.value)}</strong>
-        </div>
-      </button>
-    `;
-  }).join("");
-
-  document.querySelectorAll(".mobile-graph-row").forEach(row => {
-    row.addEventListener("click", () => {
-      state.selectedYear = Number(row.dataset.year);
-      state.selectedCell = null;
-      syncYearSelect();
-      render();
-      activateMobileView("chart");
-    });
-  });
+  box.innerHTML = `
+    <div class="mobile-summary-card">
+      <span class="mobile-label">Gráfica avanzada</span>
+      <strong>La gráfica interactiva irá en una página independiente.</strong>
+      <p>
+        Para mantener estable el dashboard principal, la visualización avanzada se construirá en una nueva página.
+      </p>
+      <p>
+        Página prevista: <strong>grafica.html</strong>
+      </p>
+    </div>
+  `;
 }
 
 function activateMobileView(target) {
