@@ -23,26 +23,66 @@ const chartColors = [
 ];
 
 async function init() {
-  const [recordsResponse, weightsResponse] = await Promise.all([
-    fetch("./data/records.json"),
-    fetch("./data/weights.json")
-  ]);
+  try {
+    const [recordsResponse, weightsResponse] = await Promise.all([
+      fetch("./data/records.json"),
+      fetch("./data/weights.json")
+    ]);
 
-  state.records = await recordsResponse.json();
-  state.weights = await weightsResponse.json();
+    if (!recordsResponse.ok) {
+      throw new Error(`No se pudo cargar records.json: ${recordsResponse.status}`);
+    }
 
-  populateControls();
-  setupMobileTabs();
-  renderWeights();
-  render();
+    if (!weightsResponse.ok) {
+      throw new Error(`No se pudo cargar weights.json: ${weightsResponse.status}`);
+    }
+
+    state.records = await recordsResponse.json();
+    state.weights = await weightsResponse.json();
+
+    populateControls();
+    setupMobileTabs();
+    renderWeights();
+    render();
+  } catch (error) {
+    console.error("Error inicializando la aplicación:", error);
+    showFatalError(error);
+  }
+}
+
+function showFatalError(error) {
+  const main = document.querySelector("main");
+
+  if (!main) {
+    return;
+  }
+
+  main.insertAdjacentHTML("afterbegin", `
+    <section class="method-warning">
+      <strong>Error de carga:</strong>
+      no se han podido cargar los datos de la aplicación.
+      <br />
+      Detalle técnico: ${escapeHtml(error.message)}
+    </section>
+  `);
 }
 
 function populateControls() {
-  const territories = [...new Set(state.records.map(record => record.territory))].sort();
-  const years = [...new Set(state.records.map(record => record.year))].sort((a, b) => a - b);
-
   const territorySelect = document.getElementById("territorySelect");
   const yearSelect = document.getElementById("yearSelect");
+  const metricSelect = document.getElementById("metricSelect");
+  const viewSelect = document.getElementById("viewSelect");
+
+  if (!territorySelect || !yearSelect) {
+    console.warn("No existen los selectores principales.");
+    return;
+  }
+
+  const territories = [...new Set(state.records.map(record => record.territory))].sort();
+  const years = [...new Set(state.records.map(record => Number(record.year)))].sort((a, b) => a - b);
+
+  territorySelect.innerHTML = "";
+  yearSelect.innerHTML = "";
 
   territories.forEach(territory => {
     const option = document.createElement("option");
@@ -76,16 +116,20 @@ function populateControls() {
     render();
   });
 
-  document.getElementById("metricSelect").addEventListener("change", event => {
-    state.metric = event.target.value;
-    state.selectedCell = null;
-    render();
-  });
+  if (metricSelect) {
+    metricSelect.addEventListener("change", event => {
+      state.metric = event.target.value;
+      state.selectedCell = null;
+      render();
+    });
+  }
 
-  document.getElementById("viewSelect").addEventListener("change", event => {
-    state.view = event.target.value;
-    render();
-  });
+  if (viewSelect) {
+    viewSelect.addEventListener("change", event => {
+      state.view = event.target.value;
+      render();
+    });
+  }
 }
 
 function setupMobileTabs() {
@@ -128,9 +172,14 @@ function setupMobileTabs() {
     });
   });
 }
+
 function render() {
   const records = getTerritoryRecords();
   const years = getYears(records);
+
+  if (!records.length || !years.length) {
+    return;
+  }
 
   const series = state.view === "total"
     ? getTotalSeries(records, years)
@@ -150,13 +199,12 @@ function render() {
   renderMobileChart(records, years);
 }
 
-
 function getTerritoryRecords() {
   return state.records.filter(record => record.territory === state.territory);
 }
 
 function getYears(records) {
-  return [...new Set(records.map(record => record.year))].sort((a, b) => a - b);
+  return [...new Set(records.map(record => Number(record.year)))].sort((a, b) => a - b);
 }
 
 function getCrimes(records) {
@@ -164,12 +212,12 @@ function getCrimes(records) {
 }
 
 function getRecord(records, crime, year) {
-  return records.find(record => record.crime === crime && record.year === year);
+  return records.find(record => record.crime === crime && Number(record.year) === Number(year));
 }
 
 function getYearTotal(records, year, field) {
   return records
-    .filter(record => record.year === year)
+    .filter(record => Number(record.year) === Number(year))
     .reduce((sum, record) => sum + Number(record[field] || 0), 0);
 }
 
@@ -201,10 +249,10 @@ function updateHeadings() {
     ? "total agregado"
     : "líneas por delito";
 
-  document.getElementById("chartTitle").textContent = `${state.territory}: ${viewLabel}`;
-  document.getElementById("chartSubtitle").textContent = metricLabel;
-  document.getElementById("yearPanelSubtitle").textContent = `Detalle de ${state.selectedYear}`;
-  document.getElementById("rankingTitle").textContent = `Ranking por delito · ${state.selectedYear}`;
+  setText("chartTitle", `${state.territory}: ${viewLabel}`);
+  setText("chartSubtitle", metricLabel);
+  setText("yearPanelSubtitle", `Detalle de ${state.selectedYear}`);
+  setText("rankingTitle", `Ranking por delito · ${state.selectedYear}`);
 }
 
 function renderKpis(records) {
@@ -222,22 +270,29 @@ function renderKpis(records) {
   const sinceBase = calculatePercentageChange(weightedBase, weightedCurrent);
   const yoyCases = calculatePercentageChange(casesPrevious, casesCurrent);
 
-  document.getElementById("kpiWeighted").textContent = formatNumber(weightedCurrent);
-  document.getElementById("kpiWeightedContext").textContent = `Puntuación total ponderada en ${currentYear}`;
+  setText("kpiWeighted", formatNumber(weightedCurrent));
+  setText("kpiWeightedContext", `Puntuación total ponderada en ${currentYear}`);
 
-  document.getElementById("kpiCases").textContent = formatNumber(casesCurrent);
-  document.getElementById("kpiCasesContext").textContent = `Variación de casos vs ${previousYear}: ${formatPercentage(yoyCases)}`;
+  setText("kpiCases", formatNumber(casesCurrent));
+  setText("kpiCasesContext", `Variación de casos vs ${previousYear}: ${formatPercentage(yoyCases)}`);
 
-  document.getElementById("kpiYoY").innerHTML = formatPercentageWithBadge(yoyWeighted);
-  document.getElementById("kpiYoYContext").textContent = previousYear >= 2016
-    ? `Comparado con ${previousYear}`
-    : "No hay año anterior en la serie";
+  setHTML("kpiYoY", formatPercentageWithBadge(yoyWeighted));
+  setText(
+    "kpiYoYContext",
+    previousYear >= 2016 ? `Comparado con ${previousYear}` : "No hay año anterior en la serie"
+  );
 
-  document.getElementById("kpiSinceBase").innerHTML = formatPercentageWithBadge(sinceBase);
-  document.getElementById("kpiSinceBaseContext").textContent = "Comparado con 2016";
+  setHTML("kpiSinceBase", formatPercentageWithBadge(sinceBase));
+  setText("kpiSinceBaseContext", "Comparado con 2016");
 }
 
 function renderYearInsight(records) {
+  const box = document.getElementById("yearInsightBox");
+
+  if (!box) {
+    return;
+  }
+
   const year = state.selectedYear;
   const previousYear = year - 1;
 
@@ -246,16 +301,14 @@ function renderYearInsight(records) {
   const change = calculatePercentageChange(previousWeighted, currentWeighted);
 
   const currentRecords = records
-    .filter(record => record.year === year)
-    .sort((a, b) => b.weighted_score - a.weighted_score);
+    .filter(record => Number(record.year) === Number(year))
+    .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score));
 
   const top = currentRecords.slice(0, 3);
 
-  const box = document.getElementById("yearInsightBox");
-
   box.innerHTML = `
     <p>
-      En <strong>${state.territory}</strong>, el índice ponderado de <strong>${year}</strong> es
+      En <strong>${escapeHtml(state.territory)}</strong>, el índice ponderado de <strong>${year}</strong> es
       <strong>${formatNumber(currentWeighted)}</strong>.
     </p>
 
@@ -269,7 +322,7 @@ function renderYearInsight(records) {
     <ol>
       ${top.map(record => `
         <li>
-          <strong>${record.crime}</strong>: ${formatNumber(record.weighted_score)}
+          <strong>${escapeHtml(record.crime)}</strong>: ${formatNumber(record.weighted_score)}
           <span class="muted-text">(${formatNumber(record.count)} casos)</span>
         </li>
       `).join("")}
@@ -280,6 +333,10 @@ function renderYearInsight(records) {
 function renderAnnualTable(records, years) {
   const head = document.getElementById("annualTableHead");
   const body = document.getElementById("annualTableBody");
+
+  if (!head || !body) {
+    return;
+  }
 
   head.innerHTML = "";
   body.innerHTML = "";
@@ -297,7 +354,13 @@ function renderAnnualTable(records, years) {
 
     th.addEventListener("click", () => {
       state.selectedYear = year;
-      document.getElementById("yearSelect").value = year;
+
+      const yearSelect = document.getElementById("yearSelect");
+
+      if (yearSelect) {
+        yearSelect.value = year;
+      }
+
       state.selectedCell = null;
       render();
     });
@@ -330,7 +393,7 @@ function renderAnnualTable(records, years) {
       if (
         state.selectedCell &&
         state.selectedCell.crime === crime &&
-        state.selectedCell.year === year
+        Number(state.selectedCell.year) === Number(year)
       ) {
         td.classList.add("selected-cell");
       }
@@ -349,7 +412,12 @@ function renderAnnualTable(records, years) {
         };
 
         state.selectedYear = year;
-        document.getElementById("yearSelect").value = year;
+
+        const yearSelect = document.getElementById("yearSelect");
+
+        if (yearSelect) {
+          yearSelect.value = year;
+        }
 
         render();
       });
@@ -363,13 +431,18 @@ function renderAnnualTable(records, years) {
 
 function renderRanking(records) {
   const tbody = document.getElementById("rankingBody");
+
+  if (!tbody) {
+    return;
+  }
+
   tbody.innerHTML = "";
 
   const year = state.selectedYear;
   const previousYear = year - 1;
 
   const rows = records
-    .filter(record => record.year === year)
+    .filter(record => Number(record.year) === Number(year))
     .map(record => {
       const previous = getRecord(records, record.crime, previousYear);
       const previousWeighted = previous ? previous.weighted_score : null;
@@ -382,13 +455,13 @@ function renderRanking(records) {
         change
       };
     })
-    .sort((a, b) => b.weighted_score - a.weighted_score);
+    .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score));
 
   rows.forEach(row => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td>${row.crime}</td>
+      <td>${escapeHtml(row.crime)}</td>
       <td>${formatNumber(row.count)}</td>
       <td>${formatNumber(row.weighted_score)}</td>
       <td>${formatNumber(row.weight)}</td>
@@ -401,6 +474,10 @@ function renderRanking(records) {
 
 function renderSelectedCell(records) {
   const box = document.getElementById("selectedCellBox");
+
+  if (!box) {
+    return;
+  }
 
   if (!state.selectedCell) {
     box.innerHTML = "Selecciona una celda de la tabla anual para ver el detalle.";
@@ -422,7 +499,7 @@ function renderSelectedCell(records) {
   const change = previousValue === null ? null : calculatePercentageChange(previousValue, value);
 
   box.innerHTML = `
-    <p><strong>${crime}</strong></p>
+    <p><strong>${escapeHtml(crime)}</strong></p>
     <p>Año: <strong>${year}</strong></p>
     <p>Casos registrados: <strong>${formatNumber(record.count)}</strong></p>
     <p>Peso aplicado: <strong>${formatNumber(record.weight)}</strong></p>
@@ -433,6 +510,11 @@ function renderSelectedCell(records) {
 
 function renderWeights() {
   const box = document.getElementById("weightsBox");
+
+  if (!box) {
+    return;
+  }
+
   box.innerHTML = "";
 
   Object.entries(state.weights).forEach(([crime, weight]) => {
@@ -440,7 +522,7 @@ function renderWeights() {
     div.className = "weight-card";
 
     div.innerHTML = `
-      <span>${crime}</span>
+      <span>${escapeHtml(crime)}</span>
       <strong>${formatNumber(weight)}</strong>
     `;
 
@@ -467,12 +549,12 @@ function renderMobileSummary(records) {
   const casesChange = calculatePercentageChange(casesPrevious, casesCurrent);
 
   const topCrime = records
-    .filter(record => record.year === year)
+    .filter(record => Number(record.year) === Number(year))
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score))[0];
 
   box.innerHTML = `
     <div class="mobile-summary-card primary">
-      <span class="mobile-label">${state.territory}</span>
+      <span class="mobile-label">${escapeHtml(state.territory)}</span>
       <strong>${year}</strong>
       <p>Lectura móvil del índice experimental de severidad criminal.</p>
     </div>
@@ -493,9 +575,13 @@ function renderMobileSummary(records) {
 
     <div class="mobile-summary-card">
       <span class="mobile-label">Mayor contribución en ${year}</span>
-      <strong>${topCrime ? topCrime.crime : "n/a"}</strong>
+      <strong>${topCrime ? escapeHtml(topCrime.crime) : "n/a"}</strong>
       <p>
-        ${topCrime ? `${formatNumber(topCrime.weighted_score)} puntos ponderados · ${formatNumber(topCrime.count)} casos registrados.` : "No hay datos disponibles."}
+        ${
+          topCrime
+            ? `${formatNumber(topCrime.weighted_score)} puntos ponderados · ${formatNumber(topCrime.count)} casos registrados.`
+            : "No hay datos disponibles."
+        }
       </p>
     </div>
 
@@ -516,7 +602,7 @@ function renderMobileCrimeCards(records) {
   const previousYear = year - 1;
 
   const rows = records
-    .filter(record => record.year === year)
+    .filter(record => Number(record.year) === Number(year))
     .map(record => {
       const previous = getRecord(records, record.crime, previousYear);
       const previousWeighted = previous ? previous.weighted_score : null;
@@ -531,35 +617,57 @@ function renderMobileCrimeCards(records) {
     })
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score));
 
-  box.innerHTML = rows.map((record, index) => {
-    return `
-      <button class="mobile-crime-card" type="button" data-crime="${record.crime}" data-year="${year}">
-        <div class="mobile-card-top">
-          <span class="mobile-rank">#${index + 1}</span>
-          ${formatPercentageWithBadge(record.change)}
-        </div>
+  box.innerHTML = rows.map((record, index) => `
+    <button
+      class="mobile-crime-card"
+      type="button"
+      data-crime="${escapeHtmlAttribute(record.crime)}"
+      data-year="${year}"
+    >
+      <div class="mobile-card-top">
+        <span class="mobile-rank">#${index + 1}</span>
+        ${formatPercentageWithBadge(record.change)}
+      </div>
 
-        <strong>${record.crime}</strong>
+      <strong>${escapeHtml(record.crime)}</strong>
 
-        <div class="mobile-card-stats">
-          <span>
-            <small>Casos</small>
-            ${formatNumber(record.count)}
-          </span>
+      <div class="mobile-card-stats">
+        <span>
+          <small>Casos</small>
+          ${formatNumber(record.count)}
+        </span>
 
-          <span>
-            <small>Ponderado</small>
-            ${formatNumber(record.weighted_score)}
-          </span>
+        <span>
+          <small>Ponderado</small>
+          ${formatNumber(record.weighted_score)}
+        </span>
 
-          <span>
-            <small>Peso</small>
-            ${formatNumber(record.weight)}
-          </span>
-        </div>
-      </button>
-    `;
-  }).join("");
+        <span>
+          <small>Peso</small>
+          ${formatNumber(record.weight)}
+        </span>
+      </div>
+    </button>
+  `).join("");
+
+  document.querySelectorAll(".mobile-crime-card").forEach(card => {
+    card.addEventListener("click", () => {
+      state.selectedCell = {
+        crime: card.dataset.crime,
+        year: Number(card.dataset.year)
+      };
+
+      state.selectedYear = Number(card.dataset.year);
+
+      const yearSelect = document.getElementById("yearSelect");
+
+      if (yearSelect) {
+        yearSelect.value = state.selectedYear;
+      }
+
+      render();
+    });
+  });
 }
 
 function renderMobileTimeline(records, years) {
@@ -580,7 +688,7 @@ function renderMobileTimeline(records, years) {
     const change = calculatePercentageChange(previousValue, value);
     const width = Math.max((value / maxValue) * 100, 4);
 
-    const selectedClass = year === state.selectedYear ? "selected" : "";
+    const selectedClass = Number(year) === Number(state.selectedYear) ? "selected" : "";
 
     return `
       <button class="mobile-year-row ${selectedClass}" type="button" data-year="${year}">
@@ -613,19 +721,97 @@ function renderMobileTimeline(records, years) {
       }
 
       render();
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
     });
   });
+}
+
+function renderMobileChart(records, years) {
+  const box = document.getElementById("mobileChartContent");
+
+  if (!box) {
+    return;
+  }
+
+  const field = state.metric;
+
+  const metricLabel = field === "weighted_score"
+    ? "Índice ponderado"
+    : "Casos registrados";
+
+  const values = years.map(year => ({
+    year,
+    value: getYearTotal(records, year, field),
+    previousValue: getYearTotal(records, year - 1, field)
+  }));
+
+  const maxValue = Math.max(...values.map(item => item.value), 1);
+
+  box.innerHTML = values.map(item => {
+    const change = calculatePercentageChange(item.previousValue, item.value);
+    const width = Math.max((item.value / maxValue) * 100, 5);
+    const selectedClass = Number(item.year) === Number(state.selectedYear) ? "selected" : "";
+
+    return `
+      <button class="mobile-graph-row ${selectedClass}" type="button" data-year="${item.year}">
+        <div class="mobile-graph-header">
+          <strong>${item.year}</strong>
+          ${formatPercentageWithBadge(change)}
+        </div>
+
+        <div class="mobile-graph-track">
+          <span class="mobile-graph-fill" style="width: ${width}%"></span>
+        </div>
+
+        <div class="mobile-graph-footer">
+          <span>${metricLabel}</span>
+          <strong>${formatNumber(item.value)}</strong>
+        </div>
+      </button>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".mobile-graph-row").forEach(row => {
+    row.addEventListener("click", () => {
+      state.selectedYear = Number(row.dataset.year);
+      state.selectedCell = null;
+
+      const yearSelect = document.getElementById("yearSelect");
+
+      if (yearSelect) {
+        yearSelect.value = state.selectedYear;
+      }
+
+      render();
+      activateMobileView("chart");
+    });
+  });
+}
+
+function activateMobileView(target) {
+  const tab = document.querySelector(`[data-mobile-view="${target}"]`);
+  const view = document.getElementById(`mobile${capitalize(target)}View`);
+
+  document.querySelectorAll(".mobile-tab").forEach(item => {
+    item.classList.remove("active");
+  });
+
+  document.querySelectorAll(".mobile-view").forEach(item => {
+    item.classList.remove("active");
+  });
+
+  if (tab) {
+    tab.classList.add("active");
+  }
+
+  if (view) {
+    view.classList.add("active");
+  }
 }
 
 function drawChart(years, series) {
   const canvas = document.getElementById("chartCanvas");
 
-  if (!canvas) {
+  if (!canvas || !series.length) {
     return;
   }
 
@@ -755,231 +941,6 @@ function drawLegend(ctx, series, margin) {
   });
 }
 
-function renderMobileChart(records, years) {
-  const box = document.getElementById("mobileChartContent");
-
-  if (!box) {
-    return;
-  }
-
-  const field = state.metric;
-
-  const metricLabel = field === "weighted_score"
-    ? "Índice ponderado"
-    : "Casos registrados";
-
-  const values = years.map(year => ({
-    year,
-    value: getYearTotal(records, year, field),
-    previousValue: getYearTotal(records, year - 1, field)
-  }));
-
-  const maxValue = Math.max(...values.map(item => item.value), 1);
-
-  box.innerHTML = values.map(item => {
-    const change = calculatePercentageChange(item.previousValue, item.value);
-    const width = Math.max((item.value / maxValue) * 100, 5);
-    const selectedClass = item.year === state.selectedYear ? "selected" : "";
-
-    return `
-      <button class="mobile-graph-row ${selectedClass}" type="button" data-year="${item.year}">
-        <div class="mobile-graph-header">
-          <strong>${item.year}</strong>
-          ${formatPercentageWithBadge(change)}
-        </div>
-
-        <div class="mobile-graph-track">
-          <span class="mobile-graph-fill" style="width: ${width}%"></span>
-        </div>
-
-        <div class="mobile-graph-footer">
-          <span>${metricLabel}</span>
-          <strong>${formatNumber(item.value)}</strong>
-        </div>
-      </button>
-    `;
-  }).join("");
-
-  document.querySelectorAll(".mobile-graph-row").forEach(row => {
-    row.addEventListener("click", () => {
-      state.selectedYear = Number(row.dataset.year);
-      state.selectedCell = null;
-
-      const yearSelect = document.getElementById("yearSelect");
-
-      if (yearSelect) {
-        yearSelect.value = state.selectedYear;
-      }
-
-      render();
-
-      const chartTab = document.querySelector('[data-mobile-view="chart"]');
-      const chartView = document.getElementById("mobileChartView");
-
-      document.querySelectorAll(".mobile-tab").forEach(tab => {
-        tab.classList.remove("active");
-      });
-
-      document.querySelectorAll(".mobile-view").forEach(view => {
-        view.classList.remove("active");
-      });
-
-      if (chartTab) {
-        chartTab.classList.add("active");
-      }
-
-      if (chartView) {
-        chartView.classList.add("active");
-      }
-    });
-  });
-}
-  
-
-  const ctx = canvas.getContext("2d");
-
-  const width = canvas.width;
-  const height = canvas.height;
-
-  const margin = {
-    top: 34,
-    right: 24,
-    bottom: 56,
-    left: 74
-  };
-
-  const plotWidth = width - margin.left - margin.right;
-  const plotHeight = height - margin.top - margin.bottom;
-
-  const field = state.metric;
-  const values = years.map(year => getYearTotal(records, year, field));
-  const maxValue = Math.max(...values, 1);
-
-  ctx.clearRect(0, 0, width, height);
-
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, width, height);
-
-  drawMobileChartGrid(ctx, width, margin, plotHeight, maxValue);
-  drawMobileChartSelectedYear(ctx, years, margin, plotWidth, plotHeight);
-  drawMobileChartLine(ctx, years, values, margin, plotWidth, plotHeight, maxValue);
-  drawMobileChartXAxis(ctx, years, margin, plotWidth, height);
-
-  if (legend) {
-    const selectedValue = getYearTotal(records, state.selectedYear, field);
-    const previousValue = getYearTotal(records, state.selectedYear - 1, field);
-    const change = calculatePercentageChange(previousValue, selectedValue);
-
-    const metricLabel = state.metric === "weighted_score"
-      ? "Índice ponderado"
-      : "Casos registrados";
-
-    legend.innerHTML = `
-      <div>
-        <span>${metricLabel}</span>
-        <strong>${state.selectedYear}: ${formatNumber(selectedValue)}</strong>
-      </div>
-
-      <div>
-        <span>Variación vs ${state.selectedYear - 1}</span>
-        ${formatPercentageWithBadge(change)}
-      </div>
-    `;
-  }
-
-function drawMobileChartGrid(ctx, width, margin, plotHeight, maxValue) {
-  ctx.strokeStyle = "#e5e7eb";
-  ctx.fillStyle = "#64748b";
-  ctx.lineWidth = 1;
-  ctx.font = "13px system-ui";
-
-  for (let i = 0; i <= 4; i++) {
-    const y = margin.top + (plotHeight * i / 4);
-    const value = maxValue - (maxValue * i / 4);
-
-    ctx.beginPath();
-    ctx.moveTo(margin.left, y);
-    ctx.lineTo(width - margin.right, y);
-    ctx.stroke();
-
-    ctx.fillText(formatCompactNumber(value), 12, y + 4);
-  }
-}
-
-function drawMobileChartXAxis(ctx, years, margin, plotWidth, height) {
-  ctx.fillStyle = "#64748b";
-  ctx.font = "13px system-ui";
-
-  years.forEach((year, index) => {
-    const x = margin.left + (plotWidth * index / Math.max(years.length - 1, 1));
-
-    if (index % 2 === 0 || year === state.selectedYear) {
-      ctx.fillText(String(year), x - 15, height - 24);
-    }
-  });
-}
-
-function drawMobileChartSelectedYear(ctx, years, margin, plotWidth, plotHeight) {
-  const index = years.indexOf(state.selectedYear);
-
-  if (index === -1) {
-    return;
-  }
-
-  const x = margin.left + (plotWidth * index / Math.max(years.length - 1, 1));
-
-  ctx.fillStyle = "rgba(29, 78, 216, 0.08)";
-  ctx.fillRect(x - 22, margin.top, 44, plotHeight);
-
-  ctx.strokeStyle = "rgba(29, 78, 216, 0.35)";
-  ctx.lineWidth = 1.5;
-
-  ctx.beginPath();
-  ctx.moveTo(x, margin.top);
-  ctx.lineTo(x, margin.top + plotHeight);
-  ctx.stroke();
-}
-
-function drawMobileChartLine(ctx, years, values, margin, plotWidth, plotHeight, maxValue) {
-  ctx.strokeStyle = "#1d4ed8";
-  ctx.fillStyle = "#1d4ed8";
-  ctx.lineWidth = 4;
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-
-  ctx.beginPath();
-
-  values.forEach((value, index) => {
-    const x = margin.left + (plotWidth * index / Math.max(years.length - 1, 1));
-    const y = margin.top + plotHeight - ((value / maxValue) * plotHeight);
-
-    if (index === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-  });
-
-  ctx.stroke();
-
-  values.forEach((value, index) => {
-    const year = years[index];
-    const x = margin.left + (plotWidth * index / Math.max(years.length - 1, 1));
-    const y = margin.top + plotHeight - ((value / maxValue) * plotHeight);
-
-    ctx.beginPath();
-    ctx.arc(x, y, year === state.selectedYear ? 7 : 4.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (year === state.selectedYear) {
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      ctx.strokeStyle = "#1d4ed8";
-    }
-  });
-}
-
 function calculatePercentageChange(previous, current) {
   if (previous === null || previous === undefined || previous === 0) {
     return null;
@@ -1058,6 +1019,43 @@ function formatCompactNumber(value) {
   }
 
   return Math.round(number).toLocaleString("es-ES");
+}
+
+function setText(id, value) {
+  const element = document.getElementById(id);
+
+  if (element) {
+    element.textContent = value;
+  }
+}
+
+function setHTML(id, value) {
+  const element = document.getElementById(id);
+
+  if (element) {
+    element.innerHTML = value;
+  }
+}
+
+function capitalize(value) {
+  if (!value) {
+    return "";
+  }
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value).replaceAll("`", "&#096;");
 }
 
 init();
