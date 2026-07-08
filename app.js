@@ -714,6 +714,79 @@ function renderMobileSummary(records) {
     .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score))[0];
 
   box.innerHTML = `
+    <button class="mobile-summary-card primary mobile-chart-cta" type="button">
+      <span class="mobile-label">${escapeHtml(state.territory)}</span>
+      <strong>${year}</strong>
+      <p>
+        Abrir tabla interactiva anual del territorio seleccionado.
+      </p>
+    </button>
+
+    <div class="mobile-metric-grid">
+      <div class="mobile-metric">
+        <span>Índice ponderado</span>
+        <strong>${formatNumber(weightedCurrent)}</strong>
+        <small>vs ${previousYear}: ${formatPercentage(weightedChange)}</small>
+      </div>
+
+      <div class="mobile-metric">
+        <span>Casos registrados</span>
+        <strong>${formatNumber(casesCurrent)}</strong>
+        <small>vs ${previousYear}: ${formatPercentage(casesChange)}</small>
+      </div>
+    </div>
+
+    <div class="mobile-summary-card">
+      <span class="mobile-label">Mayor contribución en ${year}</span>
+      <strong>${topCrime ? escapeHtml(topCrime.crime) : "n/a"}</strong>
+      <p>
+        ${
+          topCrime
+            ? `${formatNumber(topCrime.weighted_score)} puntos ponderados · ${formatNumber(topCrime.count)} casos registrados.`
+            : "No hay datos disponibles."
+        }
+      </p>
+    </div>
+
+    <div class="mobile-note-box">
+      El índice mide severidad registrada, no criminalidad real total ni delitos no denunciados.
+    </div>
+  `;
+
+  const cta = box.querySelector(".mobile-chart-cta");
+
+  if (cta) {
+    cta.addEventListener("click", () => {
+      activateMobileView("chart");
+
+      const mobileDashboard = document.querySelector(".mobile-dashboard");
+
+      if (mobileDashboard) {
+        mobileDashboard.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+    });
+  }
+}
+
+  const year = state.selectedYear;
+  const previousYear = year - 1;
+
+  const weightedCurrent = getYearTotal(records, year, "weighted_score");
+  const weightedPrevious = getYearTotal(records, previousYear, "weighted_score");
+  const casesCurrent = getYearTotal(records, year, "count");
+  const casesPrevious = getYearTotal(records, previousYear, "count");
+
+  const weightedChange = calculatePercentageChange(weightedPrevious, weightedCurrent);
+  const casesChange = calculatePercentageChange(casesPrevious, casesCurrent);
+
+  const topCrime = records
+    .filter(record => Number(record.year) === Number(year))
+    .sort((a, b) => Number(b.weighted_score) - Number(a.weighted_score))[0];
+
+  box.innerHTML = `
     <div class="mobile-summary-card primary">
       <span class="mobile-label">${escapeHtml(state.territory)}</span>
       <strong>${year}</strong>
@@ -750,7 +823,7 @@ function renderMobileSummary(records) {
       El índice mide severidad registrada, no criminalidad real total ni delitos no denunciados.
     </div>
   `;
-}
+
 
 function renderMobileCrimeCards(records) {
   const box = document.getElementById("mobileCrimeCards");

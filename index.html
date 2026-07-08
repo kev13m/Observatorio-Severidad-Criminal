@@ -13,6 +13,8 @@
 
   <link rel="stylesheet" href="styles.css" />
 </head>
+<script src="menu.js?v=8"></script>
+<script src="app.js?v=8"></script>
 
 <body>
   <header class="topbar">
@@ -161,8 +163,8 @@
         </button>
 
         <button class="mobile-tab" type="button" data-mobile-view="chart">
-          Gráfica
-        </button>
+  Tabla
+</button>
 
         <button class="mobile-tab" type="button" data-mobile-view="crimes">
           Delitos
@@ -184,23 +186,23 @@
         </div>
       </article>
 
-      <article id="mobileChartView" class="mobile-view">
-        <div class="mobile-panel mobile-chart-panel">
-          <div class="mobile-panel-header">
-            <p class="section-kicker">Gráfica móvil</p>
-            <h2>Evolución agregada</h2>
-            <p>
-              Vista simplificada para móvil. Muestra la evolución total del territorio seleccionado.
-            </p>
-          </div>
+    <article id="mobileChartView" class="mobile-view">
+  <div class="mobile-panel mobile-chart-panel">
+    <div class="mobile-panel-header">
+      <p class="section-kicker">Tabla móvil</p>
+      <h2>Tabla interactiva anual</h2>
+      <p>
+        Cada tarjeta muestra un delito y sus valores por año. Toca una celda para analizarla.
+      </p>
+    </div>
 
-          <div class="mobile-chart-wrap">
-            <canvas id="mobileChartCanvas" width="760" height="460"></canvas>
-          </div>
+    <div id="mobileSelectedCellBox" class="mobile-selected-cell">
+      Toca una celda para ver el detalle.
+    </div>
 
-          <div id="mobileChartLegend" class="mobile-chart-legend"></div>
-        </div>
-      </article>
+    <div id="mobileChartContent" class="mobile-annual-matrix"></div>
+  </div>
+</article>
 
       <article id="mobileCrimesView" class="mobile-view">
         <div class="mobile-panel">
