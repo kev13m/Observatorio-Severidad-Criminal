@@ -11,10 +11,8 @@
     content="Dashboard experimental de criminalidad ponderada por severidad en España. Datos oficiales reprocesados con una capa analítica propia dentro del proyecto OSINT Vigilante."
   />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=11" />
 </head>
-<script src="menu.js?v=8"></script>
-<script src="app.js?v=8"></script>
 
 <body>
   <header class="topbar">
@@ -73,6 +71,11 @@
       <a href="index.html">
         <strong>Dashboard</strong>
         <span>Explorar datos ponderados por territorio, año y delito.</span>
+      </a>
+
+      <a href="grafica.html">
+        <strong>Gráfica avanzada</strong>
+        <span>Visualización interactiva independiente para análisis gráfico ampliado.</span>
       </a>
 
       <a href="metodologia.html">
@@ -163,8 +166,8 @@
         </button>
 
         <button class="mobile-tab" type="button" data-mobile-view="chart">
-  Tabla
-</button>
+          Gráfica
+        </button>
 
         <button class="mobile-tab" type="button" data-mobile-view="crimes">
           Delitos
@@ -186,23 +189,31 @@
         </div>
       </article>
 
-    <article id="mobileChartView" class="mobile-view">
-  <div class="mobile-panel mobile-chart-panel">
-    <div class="mobile-panel-header">
-      <p class="section-kicker">Tabla móvil</p>
-      <h2>Tabla interactiva anual</h2>
-      <p>
-        Cada tarjeta muestra un delito y sus valores por año. Toca una celda para analizarla.
-      </p>
-    </div>
+      <article id="mobileChartView" class="mobile-view">
+        <div class="mobile-panel mobile-chart-panel">
+          <div class="mobile-panel-header">
+            <p class="section-kicker">Gráfica avanzada</p>
+            <h2>Visualización independiente</h2>
+            <p>
+              La gráfica interactiva se construirá en una página separada para mantener estable y ligero el dashboard principal.
+            </p>
+          </div>
 
-    <div id="mobileSelectedCellBox" class="mobile-selected-cell">
-      Toca una celda para ver el detalle.
-    </div>
+          <div id="mobileChartContent" class="mobile-card-list">
+            <div class="mobile-summary-card">
+              <span class="mobile-label">Página prevista</span>
+              <strong>grafica.html</strong>
+              <p>
+                Desde aquí se accederá a la visualización gráfica avanzada cuando esté creada.
+              </p>
+            </div>
+          </div>
 
-    <div id="mobileChartContent" class="mobile-annual-matrix"></div>
-  </div>
-</article>
+          <a class="mobile-graph-link" href="grafica.html">
+            Abrir gráfica avanzada
+          </a>
+        </div>
+      </article>
 
       <article id="mobileCrimesView" class="mobile-view">
         <div class="mobile-panel">
@@ -324,7 +335,7 @@
     </p>
   </footer>
 
-  <script src="menu.js"></script>
-  <script src="app.js"></script>
+  <script src="menu.js?v=11"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>
