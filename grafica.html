@@ -8,10 +8,10 @@
 
   <meta
     name="description"
-    content="Visualización interactiva avanzada del Observatorio de Severidad Criminal en España, con selección de territorio, delito, métrica y periodo temporal."
+    content="Gráfica avanzada interactiva del Observatorio de Severidad Criminal en España. Visualización por territorio, delito, métrica y rango temporal."
   />
 
-  <link rel="stylesheet" href="styles.css?v=19" />
+  <link rel="stylesheet" href="styles.css?v=18" />
 </head>
 
 <body>
@@ -21,16 +21,17 @@
 
       <div>
         <p class="eyebrow">OSINT Vigilante · Visualización avanzada</p>
-        <h1>Gráfica avanzada</h1>
+        <h1>Gráfica avanzada de severidad criminal</h1>
+
         <p class="project-label">
-          Exploración independiente de series anuales por territorio, delito, métrica y periodo temporal.
+          Exploración interactiva por territorio, delito, métrica y periodo temporal.
         </p>
       </div>
     </div>
 
     <div class="topbar-actions">
       <p class="header-note">
-        Ajusta los filtros y selecciona años en la gráfica o en la tabla para comparar la evolución registrada.
+        Esta página permite analizar la evolución anual del índice ponderado o de los casos registrados con una visualización separada del dashboard principal.
       </p>
 
       <button
@@ -90,15 +91,41 @@
   </aside>
 
   <main>
-    <section class="panel page-section advanced-hero">
-      <p class="section-kicker">Gráfica avanzada</p>
-      <h2>Análisis interactivo ampliado</h2>
-      <p>
-        Vista independiente para observar la evolución de casos registrados o puntuación ponderada por territorio, delito y periodo.
-      </p>
+    <details class="method-warning">
+      <summary>
+        <span>Advertencia metodológica</span>
+      </summary>
+
+      <div class="method-warning-body">
+        <p>
+          <strong>Advertencia metodológica:</strong>
+          esta gráfica no sustituye las estadísticas oficiales. Añade una visualización experimental para observar la evolución de la criminalidad registrada según métrica seleccionada.
+        </p>
+
+        <p>
+          <strong>Lectura correcta:</strong>
+          el índice ponderado permite detectar cambios en la composición de los delitos registrados, pero no mide criminalidad real total, delitos no denunciados ni causalidad institucional.
+        </p>
+
+        <p>
+          <strong>Serie actual:</strong>
+          datos anuales consolidados hasta 2024. Los datos provisionales posteriores no se integran todavía en esta versión.
+        </p>
+      </div>
+    </details>
+
+    <section class="panel advanced-hero">
+      <div>
+        <p class="section-kicker">Gráfica avanzada</p>
+        <h2>Análisis interactivo de evolución anual</h2>
+        <p>
+          Selecciona territorio, delito, métrica y rango temporal. En PC puedes hacer clic sobre la gráfica.
+          En móvil puedes tocar cada tarjeta anual.
+        </p>
+      </div>
     </section>
 
-    <section class="advanced-controls" aria-label="Controles de gráfica avanzada">
+    <section class="advanced-controls">
       <label>
         Territorio
         <select id="advancedTerritorySelect"></select>
@@ -118,10 +145,10 @@
       </label>
 
       <label>
-        Vista
+        Tipo de gráfica
         <select id="advancedModeSelect">
-          <option value="line">Línea</option>
-          <option value="bar">Barras</option>
+          <option value="line">Línea temporal</option>
+          <option value="bar">Barras anuales</option>
         </select>
       </label>
 
@@ -142,7 +169,6 @@
           <div>
             <h2 id="advancedChartTitle">Evolución</h2>
             <p id="advancedChartSubtitle">Selecciona filtros para analizar la serie.</p>
-            <div id="attemptDisclaimerBox" class="calculated-category-warning" hidden></div>
           </div>
         </div>
 
@@ -151,27 +177,31 @@
         </div>
 
         <p class="advanced-chart-help">
-          Haz clic sobre la gráfica para seleccionar un año y actualizar el detalle.
+          En escritorio: haz clic sobre un punto o barra para seleccionar el año.
         </p>
       </article>
 
-      <aside class="panel">
+      <article class="panel advanced-detail-panel">
         <div class="panel-header">
           <div>
-            <h2>Detalle</h2>
-            <p id="advancedDetailSubtitle">Resumen del año seleccionado.</p>
+            <h2>Lectura del punto seleccionado</h2>
+            <p id="advancedDetailSubtitle">Detalle del año activo.</p>
           </div>
         </div>
 
-        <div id="advancedInsightBox" class="advanced-insight-box"></div>
-      </aside>
+        <div id="advancedInsightBox" class="advanced-insight-box">
+          Selecciona un punto de la gráfica o una tarjeta anual.
+        </div>
+      </article>
     </section>
 
     <section class="panel advanced-mobile-panel">
       <div class="panel-header">
         <div>
-          <h2>Serie anual</h2>
-          <p>Vista optimizada para selección táctil.</p>
+          <h2>Lectura móvil por año</h2>
+          <p>
+            Toca una tarjeta para seleccionar el año y actualizar la lectura.
+          </p>
         </div>
       </div>
 
@@ -181,8 +211,10 @@
     <section class="panel advanced-table-panel">
       <div class="panel-header">
         <div>
-          <h2>Tabla anual</h2>
-          <p>Selecciona una fila para fijar el año de lectura.</p>
+          <h2>Tabla de evolución</h2>
+          <p>
+            Valores anuales y variación frente al año anterior dentro del periodo seleccionado.
+          </p>
         </div>
       </div>
 
@@ -204,11 +236,11 @@
 
   <footer>
     <p>
-      OSINT Vigilante · Proyecto experimental. Datos base procedentes de fuentes oficiales. Índice propio no oficial. No constituye asesoramiento legal, criminológico, policial, estadístico ni de política pública.
+      OSINT Vigilante · Proyecto experimental. Datos base procedentes de fuentes oficiales. Índice propio no oficial.
     </p>
   </footer>
 
   <script src="menu.js?v=18"></script>
-  <script src="grafica.js?v=3"></script>
+  <script src="grafica.js?v=1"></script>
 </body>
 </html>
