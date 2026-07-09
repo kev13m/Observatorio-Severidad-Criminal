@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Gráfica avanzada · OSINT Vigilante</title>
+
+  <meta
+    name="description"
+    content="Visualización interactiva avanzada del Observatorio de Severidad Criminal en España, con selección de territorio, delito, métrica y periodo temporal."
+  />
+
+  <link rel="stylesheet" href="styles.css?v=18" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+
+      <div>
+        <p class="eyebrow">OSINT Vigilante · Visualización avanzada</p>
+        <h1>Gráfica avanzada</h1>
+        <p class="project-label">
+          Exploración independiente de series anuales por territorio, delito, métrica y periodo temporal.
+        </p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <p class="header-note">
+        Ajusta los filtros y selecciona años en la gráfica o en la tabla para comparar la evolución registrada.
+      </p>
+
+      <button
+        id="menuButton"
+        class="apps-button"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+      >
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+
+  <aside id="sideDrawer" class="side-drawer" aria-label="Menú lateral">
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow">Navegación</p>
+        <h2>OSINT Vigilante</h2>
+      </div>
+
+      <button
+        id="closeMenuButton"
+        class="drawer-close"
+        type="button"
+        aria-label="Cerrar menú"
+      >
+        ×
+      </button>
+    </div>
+
+    <nav class="drawer-nav">
+      <a href="index.html">
+        <strong>Dashboard</strong>
+        <span>Explorar datos ponderados por territorio, año y delito.</span>
+      </a>
+
+      <a href="grafica.html">
+        <strong>Gráfica avanzada</strong>
+        <span>Visualización interactiva independiente para análisis gráfico ampliado.</span>
+      </a>
+
+      <a href="metodologia.html">
+        <strong>Motivo, metodología y disclaimer legal</strong>
+        <span>Por qué existe el proyecto, límites de uso y advertencias.</span>
+      </a>
+    </nav>
+
+    <div class="drawer-note">
+      <strong>OSINT Vigilante:</strong>
+      proyecto personal de análisis de fuentes abiertas y visualización de datos públicos. Serie anual consolidada hasta 2024.
+    </div>
+  </aside>
+
+  <main class="content-page">
+    <section class="panel page-section advanced-hero">
+      <p class="section-kicker">Gráfica avanzada</p>
+      <h2>Análisis interactivo ampliado</h2>
+      <p>
+        Vista independiente para observar la evolución de casos registrados o puntuación ponderada por territorio, delito y periodo.
+      </p>
+    </section>
+
+    <section class="advanced-controls" aria-label="Controles de gráfica avanzada">
+      <label>
+        Territorio
+        <select id="advancedTerritorySelect"></select>
+      </label>
+
+      <label>
+        Delito
+        <select id="advancedCrimeSelect"></select>
+      </label>
+
+      <label>
+        Métrica
+        <select id="advancedMetricSelect">
+          <option value="weighted_score">Puntuación ponderada</option>
+          <option value="count">Casos registrados</option>
+        </select>
+      </label>
+
+      <label>
+        Vista
+        <select id="advancedModeSelect">
+          <option value="line">Línea</option>
+          <option value="bar">Barras</option>
+        </select>
+      </label>
+
+      <label>
+        Año inicial
+        <select id="advancedStartYearSelect"></select>
+      </label>
+
+      <label>
+        Año final
+        <select id="advancedEndYearSelect"></select>
+      </label>
+    </section>
+
+    <section class="advanced-grid">
+      <article class="panel advanced-chart-panel">
+        <div class="panel-header">
+          <div>
+            <h2 id="advancedChartTitle">Evolución</h2>
+            <p id="advancedChartSubtitle">Selecciona filtros para cargar la serie.</p>
+          </div>
+        </div>
+
+        <div class="advanced-canvas-wrap">
+          <canvas id="advancedChartCanvas"></canvas>
+        </div>
+
+        <p class="advanced-chart-help">
+          Haz clic sobre la gráfica para seleccionar un año y actualizar el detalle.
+        </p>
+      </article>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Detalle</h2>
+            <p id="advancedDetailSubtitle">Resumen del año seleccionado.</p>
+          </div>
+        </div>
+
+        <div id="advancedInsightBox" class="advanced-insight-box"></div>
+      </aside>
+    </section>
+
+    <section class="panel advanced-mobile-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Serie anual</h2>
+          <p>Vista optimizada para selección táctil.</p>
+        </div>
+      </div>
+
+      <div id="advancedMobileList" class="advanced-mobile-list"></div>
+    </section>
+
+    <section class="panel advanced-table-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Tabla anual</h2>
+          <p>Selecciona una fila para fijar el año de lectura.</p>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="advanced-table">
+          <thead>
+            <tr>
+              <th>Año</th>
+              <th>Valor</th>
+              <th>Variación vs año anterior</th>
+            </tr>
+          </thead>
+
+          <tbody id="advancedTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      OSINT Vigilante · Proyecto experimental. Datos base procedentes de fuentes oficiales. Índice propio no oficial. No constituye asesoramiento legal, criminológico, policial, estadístico ni de política pública.
+    </p>
+  </footer>
+
+  <script src="menu.js?v=18"></script>
+  <script src="grafica.js?v=18"></script>
+</body>
+</html>
