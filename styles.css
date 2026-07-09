@@ -1637,3 +1637,28 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+.calculated-category-warning {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--red);
+  border-left: 5px solid var(--red);
+  border-radius: 13px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.calculated-category-warning strong {
+  color: #111827;
+}
+
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .calculated-category-warning {
+    margin-top: 9px;
+    padding: 11px 12px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+}

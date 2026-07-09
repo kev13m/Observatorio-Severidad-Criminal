@@ -208,6 +208,34 @@
     window.addEventListener("resize", debounce(render, 120));
   }
 
+  function renderAttemptDisclaimer() {
+    const box = document.getElementById("attemptDisclaimerBox");
+
+    if (!box) {
+      return;
+    }
+
+    const isAttemptCategory =
+      state.crime &&
+      state.crime.toLowerCase().includes("tentativas") &&
+      state.crime.toLowerCase().includes("homicidio");
+
+    if (!isAttemptCategory) {
+      box.hidden = true;
+      box.innerHTML = "";
+      return;
+    }
+
+    box.hidden = false;
+    box.innerHTML = `
+      <strong>Categoría calculada.</strong>
+      La categoría “Tentativas de homicidio/asesinato” no se muestra aquí como una serie bruta autónoma.
+      Se obtiene mediante una operación sobre series oficiales:
+      <strong>Total oficial de homicidios dolosos/asesinatos − homicidios/asesinatos consumados = tentativas calculadas.</strong>
+      Esta separación se utiliza exclusivamente para distinguir consumados y tentativas dentro del índice experimental de severidad.
+    `;
+  }
+
   function render() {
     const records = getTerritoryRecords();
     const years = getVisibleYears();
@@ -229,6 +257,8 @@
     setText("advancedChartTitle", `${subject} · ${state.territory}`);
     setText("advancedChartSubtitle", `${metric} · ${state.startYear}-${state.endYear}`);
     setText("advancedDetailSubtitle", `${subject} · ${state.territory}`);
+
+    renderAttemptDisclaimer();
 
     drawChart(data, subject, metric);
     renderInsight(data, subject, metric);
