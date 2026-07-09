@@ -1018,7 +1018,7 @@ function drawChart(years, series) {
     top: 70,
     right: 36,
     bottom: 74,
-    left: 102
+    left: 60
   };
 
   const plotWidth = width - margin.left - margin.right;
@@ -1062,9 +1062,20 @@ function drawXAxis(ctx, years, margin, plotWidth, height) {
   ctx.fillStyle = "#64748b";
   ctx.font = "14px system-ui";
 
+  const step = Math.max(1, Math.ceil((years.length * 40) / plotWidth));
+
   years.forEach((year, index) => {
-    const x = margin.left + (plotWidth * index / Math.max(years.length - 1, 1));
-    ctx.fillText(String(year), x - 16, height - 34);
+    if (index % step === 0 || index === years.length - 1) {
+      const x = margin.left + (plotWidth * index / Math.max(years.length - 1, 1));
+      
+      if (index === years.length - 1 && index % step !== 0) {
+        const prevIndex = Math.floor((years.length - 1) / step) * step;
+        const prevX = margin.left + (plotWidth * prevIndex / Math.max(years.length - 1, 1));
+        if (x - prevX < 40) return;
+      }
+      
+      ctx.fillText(String(year), x - 16, height - 34);
+    }
   });
 }
 

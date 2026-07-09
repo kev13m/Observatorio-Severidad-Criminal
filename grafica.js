@@ -304,7 +304,7 @@
       top: 58,
       right: 24,
       bottom: 58,
-      left: 86
+      left: 56
     };
 
     const plotWidth = cssWidth - margin.left - margin.right;
@@ -346,9 +346,20 @@
     ctx.fillStyle = colors.muted;
     ctx.font = "12px system-ui";
 
+    const step = Math.max(1, Math.ceil((data.length * 36) / plotWidth));
+
     data.forEach((item, index) => {
-      const x = getX(index, data.length, margin, plotWidth);
-      ctx.fillText(String(item.year), x - 14, height - 25);
+      if (index % step === 0 || index === data.length - 1) {
+        const x = getX(index, data.length, margin, plotWidth);
+        
+        if (index === data.length - 1 && index % step !== 0) {
+          const prevIndex = Math.floor((data.length - 1) / step) * step;
+          const prevX = getX(prevIndex, data.length, margin, plotWidth);
+          if (x - prevX < 36) return;
+        }
+        
+        ctx.fillText(String(item.year), x - 14, height - 25);
+      }
     });
   }
 
