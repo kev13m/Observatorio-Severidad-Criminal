@@ -1662,3 +1662,355 @@ footer {
     line-height: 1.45;
   }
 }
+
+/* =========================
+   Heat map
+   ========================= */
+
+.heat-page {
+  display: grid;
+  gap: 20px;
+}
+
+.heat-hero h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.55rem;
+  letter-spacing: 0;
+}
+
+.heat-hero p {
+  max-width: 920px;
+}
+
+.heat-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(150px, 1fr));
+  gap: 14px;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.heat-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(330px, 0.8fr);
+  gap: 20px;
+}
+
+.heat-map-panel {
+  min-width: 0;
+}
+
+.heat-map-wrap {
+  width: 100%;
+  min-height: 520px;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  overflow: hidden;
+}
+
+.spain-heat-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 520px;
+}
+
+.heat-region {
+  cursor: pointer;
+  outline: none;
+}
+
+.heat-region-shape {
+  fill: #f1f5f9;
+  stroke: #ffffff;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  transition: fill 0.18s ease, stroke 0.18s ease, filter 0.18s ease;
+}
+
+.heat-region:hover .heat-region-shape,
+.heat-region:focus-visible .heat-region-shape {
+  stroke: var(--navy);
+  filter: drop-shadow(0 8px 12px rgba(15, 23, 42, 0.18));
+}
+
+.heat-region.selected .heat-region-shape {
+  stroke: var(--navy);
+  stroke-width: 6;
+}
+
+.heat-map-label {
+  font-size: 13px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.82);
+  stroke-width: 4px;
+  letter-spacing: 0;
+}
+
+.heat-city .heat-map-label {
+  font-size: 11px;
+}
+
+.heat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.heat-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.heat-legend i {
+  width: 28px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.legend-up {
+  background: linear-gradient(90deg, #fee2e2, #991b1b);
+}
+
+.legend-down {
+  background: linear-gradient(90deg, #e0f2fe, #0f766e);
+}
+
+.legend-flat {
+  background: #e5e7eb;
+}
+
+.heat-summary,
+.heat-selected-box {
+  color: #334155;
+  line-height: 1.55;
+}
+
+.heat-stat-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.heat-stat-grid div,
+.heat-selected-metrics div {
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 13px;
+  background: var(--surface-soft);
+}
+
+.heat-stat-grid span,
+.heat-selected-title span,
+.heat-selected-metrics span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.heat-stat-grid strong,
+.heat-selected-metrics strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--navy);
+  font-size: 1rem;
+}
+
+.heat-selected-box {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.heat-selected-title {
+  padding: 14px;
+  border: 1px solid rgba(29, 78, 216, 0.28);
+  border-radius: 15px;
+  background: var(--blue-soft);
+  margin-bottom: 12px;
+}
+
+.heat-selected-title strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--navy);
+  font-size: 1.15rem;
+}
+
+.heat-selected-metrics {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.heat-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  gap: 20px;
+}
+
+.heat-top-list {
+  display: grid;
+  gap: 10px;
+}
+
+.heat-top-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.heat-top-item:hover {
+  background: var(--blue-soft);
+}
+
+.heat-top-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: var(--red);
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.heat-top-item.is-fall .heat-top-rank {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.heat-top-item.is-flat .heat-top-rank {
+  background: #e5e7eb;
+  color: var(--muted);
+}
+
+.heat-top-name {
+  min-width: 0;
+  color: var(--navy);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.heat-top-item strong {
+  color: var(--red);
+}
+
+.heat-top-item.is-fall strong {
+  color: #0f766e;
+}
+
+.heat-top-item.is-flat strong {
+  color: var(--muted);
+}
+
+.heat-top-track {
+  grid-column: 2 / -1;
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.heat-top-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--red);
+}
+
+.heat-top-item.is-fall .heat-top-fill {
+  background: #0f766e;
+}
+
+.heat-top-item.is-flat .heat-top-fill {
+  background: var(--muted);
+}
+
+.heat-table tbody tr {
+  cursor: pointer;
+}
+
+.heat-table tbody tr:hover {
+  background: var(--blue-soft);
+}
+
+.heat-table tbody tr.selected-row {
+  background: var(--blue-soft);
+  outline: 2px solid rgba(29, 78, 216, 0.35);
+  outline-offset: -2px;
+}
+
+@media (max-width: 1100px) {
+  .heat-controls {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+
+  .heat-layout,
+  .heat-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .heat-page {
+    gap: 12px;
+  }
+
+  .heat-controls {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 16px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10);
+  }
+
+  .heat-layout,
+  .heat-bottom-grid {
+    gap: 12px;
+  }
+
+  .heat-map-wrap {
+    min-height: 390px;
+  }
+
+  .spain-heat-map {
+    min-height: 390px;
+  }
+
+  .heat-map-label {
+    font-size: 11px;
+  }
+
+  .heat-legend {
+    font-size: 0.78rem;
+  }
+}

@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Mapa de calor · Spain Severity Index</title>
+
+  <meta
+    name="description"
+    content="Mapa de calor por comunidades autónomas para comparar el crecimiento de delitos seleccionados frente a la media nacional."
+  />
+
+  <link rel="stylesheet" href="styles.css?v=20" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+
+      <div>
+        <p class="eyebrow">SSI · Mapa territorial</p>
+        <h1>Mapa de calor por comunidades</h1>
+
+        <p class="project-label">
+          Comparación visual del crecimiento por tipo de delito, rango temporal y media nacional.
+        </p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <p class="header-note">
+        Selecciona un delito y un periodo para ver qué comunidades han crecido más y cómo se sitúan frente a la media nacional.
+      </p>
+
+      <button
+        id="menuButton"
+        class="apps-button"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+      >
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+
+  <aside id="sideDrawer" class="side-drawer" aria-label="Menú lateral">
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow">Navegación</p>
+        <h2>Spain Severity Index</h2>
+      </div>
+
+      <button
+        id="closeMenuButton"
+        class="drawer-close"
+        type="button"
+        aria-label="Cerrar menú"
+      >
+        ×
+      </button>
+    </div>
+
+    <nav class="drawer-nav">
+      <a href="index.html">
+        <strong>Dashboard</strong>
+        <span>Explorar datos ponderados por territorio, año y delito.</span>
+      </a>
+
+      <a href="grafica.html">
+        <strong>Gráfica avanzada</strong>
+        <span>Visualización interactiva independiente para análisis gráfico ampliado.</span>
+      </a>
+
+      <a href="mapa.html">
+        <strong>Mapa de calor</strong>
+        <span>Crecimiento territorial por delito frente a la media nacional.</span>
+      </a>
+
+      <a href="metodologia.html">
+        <strong>Motivo, metodología y disclaimer legal</strong>
+        <span>Por qué existe el proyecto, límites de uso y advertencias.</span>
+      </a>
+    </nav>
+
+    <div class="drawer-note">
+      <strong>Spain Severity Index:</strong>
+      Proyecto de análisis de fuentes abiertas y visualización de datos públicos. Serie anual consolidada hasta 2024.
+    </div>
+  </aside>
+
+  <main class="heat-page">
+    <section class="panel page-section heat-hero">
+      <p class="section-kicker">Mapa de calor</p>
+      <h2>Variación territorial por delito</h2>
+      <p>
+        Cada comunidad se colorea según el cambio registrado entre el año inicial y el final. El rojo indica subida del delito seleccionado; la intensidad aumenta cuanto mayor es el crecimiento.
+      </p>
+    </section>
+
+    <section class="heat-controls" aria-label="Controles del mapa de calor">
+      <label>
+        Delito
+        <select id="heatCrimeSelect"></select>
+      </label>
+
+      <label>
+        Métrica
+        <select id="heatMetricSelect">
+          <option value="count">Casos registrados</option>
+          <option value="weighted_score">Puntuación ponderada</option>
+        </select>
+      </label>
+
+      <label>
+        Año inicial
+        <select id="heatStartYearSelect"></select>
+      </label>
+
+      <label>
+        Año final
+        <select id="heatEndYearSelect"></select>
+      </label>
+    </section>
+
+    <section class="heat-layout">
+      <article class="panel heat-map-panel">
+        <div class="panel-header">
+          <div>
+            <h2 id="heatMapTitle">Crecimiento territorial</h2>
+            <p id="heatMapSubtitle">Selecciona delito y periodo para cargar el mapa.</p>
+          </div>
+        </div>
+
+        <div class="heat-map-wrap">
+          <svg
+            id="heatMapSvg"
+            class="spain-heat-map"
+            viewBox="0 0 760 560"
+            role="img"
+            aria-labelledby="heatMapSvgTitle"
+          >
+            <title id="heatMapSvgTitle">Mapa de calor de España por comunidades autónomas</title>
+
+            <g class="heat-region" data-territory="GALICIA" role="button" tabindex="0">
+              <title>Galicia</title>
+              <path class="heat-region-shape" d="M80 115 L120 75 L190 85 L205 130 L180 185 L115 175 L72 150 Z"></path>
+              <text class="heat-map-label" x="138" y="132">GAL</text>
+            </g>
+
+            <g class="heat-region" data-territory="ASTURIAS (PRINCIPADO DE)" role="button" tabindex="0">
+              <title>Asturias</title>
+              <path class="heat-region-shape" d="M190 85 L290 82 L305 118 L205 130 Z"></path>
+              <text class="heat-map-label" x="238" y="111">AST</text>
+            </g>
+
+            <g class="heat-region" data-territory="CANTABRIA" role="button" tabindex="0">
+              <title>Cantabria</title>
+              <path class="heat-region-shape" d="M300 82 L365 88 L360 125 L305 118 Z"></path>
+              <text class="heat-map-label" x="331" y="111">CAN</text>
+            </g>
+
+            <g class="heat-region" data-territory="PAÍS VASCO" role="button" tabindex="0">
+              <title>País Vasco</title>
+              <path class="heat-region-shape" d="M365 88 L445 95 L458 135 L395 145 L360 125 Z"></path>
+              <text class="heat-map-label" x="410" y="122">PV</text>
+            </g>
+
+            <g class="heat-region" data-territory="NAVARRA (COMUNIDAD FORAL DE)" role="button" tabindex="0">
+              <title>Navarra</title>
+              <path class="heat-region-shape" d="M395 145 L458 135 L480 200 L420 215 Z"></path>
+              <text class="heat-map-label" x="438" y="181">NAV</text>
+            </g>
+
+            <g class="heat-region" data-territory="RIOJA (LA)" role="button" tabindex="0">
+              <title>La Rioja</title>
+              <path class="heat-region-shape" d="M332 138 L395 145 L420 180 L350 185 Z"></path>
+              <text class="heat-map-label" x="376" y="167">RIO</text>
+            </g>
+
+            <g class="heat-region" data-territory="CASTILLA Y LEÓN" role="button" tabindex="0">
+              <title>Castilla y León</title>
+              <path class="heat-region-shape" d="M160 180 L205 130 L305 118 L350 185 L420 180 L420 250 L350 285 L245 280 L170 250 L130 210 Z"></path>
+              <text class="heat-map-label" x="276" y="220">CYL</text>
+            </g>
+
+            <g class="heat-region" data-territory="ARAGÓN" role="button" tabindex="0">
+              <title>Aragón</title>
+              <path class="heat-region-shape" d="M420 180 L480 200 L545 165 L595 245 L555 340 L465 320 L420 250 Z"></path>
+              <text class="heat-map-label" x="504" y="253">ARA</text>
+            </g>
+
+            <g class="heat-region" data-territory="CATALUÑA" role="button" tabindex="0">
+              <title>Cataluña</title>
+              <path class="heat-region-shape" d="M545 165 L645 155 L690 225 L655 315 L590 345 L555 340 L595 245 Z"></path>
+              <text class="heat-map-label" x="620" y="246">CAT</text>
+            </g>
+
+            <g class="heat-region" data-territory="MADRID (COMUNIDAD DE)" role="button" tabindex="0">
+              <title>Madrid</title>
+              <path class="heat-region-shape" d="M335 295 L385 295 L395 340 L355 365 L315 340 Z"></path>
+              <text class="heat-map-label" x="355" y="333">MAD</text>
+            </g>
+
+            <g class="heat-region" data-territory="CASTILLA - LA MANCHA" role="button" tabindex="0">
+              <title>Castilla-La Mancha</title>
+              <path class="heat-region-shape" d="M245 280 L350 285 L315 340 L355 365 L395 340 L465 320 L520 390 L470 470 L340 475 L250 420 L210 340 Z"></path>
+              <text class="heat-map-label" x="365" y="402">CLM</text>
+            </g>
+
+            <g class="heat-region" data-territory="EXTREMADURA" role="button" tabindex="0">
+              <title>Extremadura</title>
+              <path class="heat-region-shape" d="M130 250 L245 280 L210 340 L250 420 L175 445 L105 380 L95 300 Z"></path>
+              <text class="heat-map-label" x="169" y="353">EXT</text>
+            </g>
+
+            <g class="heat-region" data-territory="COMUNITAT VALENCIANA" role="button" tabindex="0">
+              <title>Comunitat Valenciana</title>
+              <path class="heat-region-shape" d="M555 340 L590 345 L590 430 L535 500 L470 470 L520 390 Z"></path>
+              <text class="heat-map-label" x="542" y="424">CV</text>
+            </g>
+
+            <g class="heat-region" data-territory="MURCIA (REGIÓN DE)" role="button" tabindex="0">
+              <title>Murcia</title>
+              <path class="heat-region-shape" d="M470 470 L535 500 L520 540 L435 535 L405 500 Z"></path>
+              <text class="heat-map-label" x="477" y="516">MUR</text>
+            </g>
+
+            <g class="heat-region" data-territory="ANDALUCÍA" role="button" tabindex="0">
+              <title>Andalucía</title>
+              <path class="heat-region-shape" d="M175 445 L250 420 L340 475 L470 470 L405 500 L435 535 L330 550 L205 525 L135 495 Z"></path>
+              <text class="heat-map-label" x="305" y="510">AND</text>
+            </g>
+
+            <g class="heat-region" data-territory="BALEARS (ILLES)" role="button" tabindex="0">
+              <title>Illes Balears</title>
+              <ellipse class="heat-region-shape" cx="675" cy="410" rx="24" ry="16"></ellipse>
+              <ellipse class="heat-region-shape" cx="720" cy="438" rx="16" ry="10"></ellipse>
+              <text class="heat-map-label" x="683" y="418">BAL</text>
+            </g>
+
+            <g class="heat-region" data-territory="CANARIAS" role="button" tabindex="0">
+              <title>Canarias</title>
+              <ellipse class="heat-region-shape" cx="80" cy="500" rx="18" ry="11"></ellipse>
+              <ellipse class="heat-region-shape" cx="122" cy="515" rx="20" ry="12"></ellipse>
+              <ellipse class="heat-region-shape" cx="165" cy="505" rx="14" ry="9"></ellipse>
+              <text class="heat-map-label" x="119" y="548">CAN</text>
+            </g>
+
+            <g class="heat-region heat-city" data-territory="CIUDAD AUTÓNOMA DE CEUTA" role="button" tabindex="0">
+              <title>Ceuta</title>
+              <circle class="heat-region-shape" cx="245" cy="545" r="10"></circle>
+              <text class="heat-map-label" x="245" y="532">CEU</text>
+            </g>
+
+            <g class="heat-region heat-city" data-territory="CIUDAD AUTÓNOMA DE MELILLA" role="button" tabindex="0">
+              <title>Melilla</title>
+              <circle class="heat-region-shape" cx="545" cy="548" r="10"></circle>
+              <text class="heat-map-label" x="545" y="534">MEL</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="heat-legend" aria-label="Leyenda del mapa de calor">
+          <span><i class="legend-up"></i> Subida del delito seleccionado</span>
+          <span><i class="legend-down"></i> Bajada</span>
+          <span><i class="legend-flat"></i> Estable o sin base</span>
+        </div>
+      </article>
+
+      <aside class="panel heat-insight-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Lectura del periodo</h2>
+            <p id="heatContextLabel">Rango temporal, delito y media nacional.</p>
+          </div>
+        </div>
+
+        <div id="heatSummary" class="heat-summary"></div>
+        <div id="heatSelectedBox" class="heat-selected-box"></div>
+      </aside>
+    </section>
+
+    <section class="heat-bottom-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Comunidades con mayor crecimiento</h2>
+            <p>Ordenadas por variación porcentual en el rango seleccionado.</p>
+          </div>
+        </div>
+
+        <div id="heatTopList" class="heat-top-list"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Detalle territorial</h2>
+            <p>Comparación de cada comunidad frente a la media nacional.</p>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table class="heat-table">
+            <thead>
+              <tr>
+                <th>Territorio</th>
+                <th>Inicio</th>
+                <th>Final</th>
+                <th>Variación</th>
+                <th>Vs media</th>
+              </tr>
+            </thead>
+
+            <tbody id="heatTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Spain Severity Index · Proyecto experimental. Datos base procedentes de fuentes oficiales. Las variaciones comparan hechos conocidos registrados, no criminalidad real total.
+    </p>
+  </footer>
+
+  <script src="menu.js?v=18"></script>
+  <script src="mapa.js?v=1"></script>
+</body>
+</html>
