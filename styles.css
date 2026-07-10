@@ -246,10 +246,10 @@ h1 {
 .drawer-note {
   margin-top: auto;
   padding: 14px;
-  border: 1px solid #f5d68a;
+  border: 1px solid #cbd5e1;
   border-radius: 14px;
-  background: var(--amber-soft);
-  color: #713f12;
+  background: #f1f5f9;
+  color: #334155;
   line-height: 1.45;
 }
 
@@ -1437,10 +1437,10 @@ footer {
 
   .mobile-note-box {
     padding: 12px;
-    border: 1px solid #f5d68a;
+    border: 1px solid #cbd5e1;
     border-radius: 13px;
-    background: var(--amber-soft);
-    color: #713f12;
+    background: #f1f5f9;
+    color: #334155;
     font-size: 0.82rem;
     line-height: 1.45;
   }
